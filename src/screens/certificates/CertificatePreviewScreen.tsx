@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Platform,
+  Image,
 } from 'react-native';
 import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,6 +18,8 @@ import { Certificate, RootStackParamList } from '../../types';
 import { getCertificateById, updateCertificatePdf } from '../../database/database';
 import { generateAndSharePdf, printCertificate } from '../../services/pdfService';
 import { Colors } from '../../theme/colors';
+
+const TRASEME_LOGO = require('../../../assets/traseme-logo.png');
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 
@@ -115,13 +117,7 @@ export function CertificatePreviewScreen() {
         {/* Header */}
         <View style={styles.certHeader}>
           <View style={styles.certHeaderLeft}>
-            <View style={styles.trasemeLogo}>
-              <Text style={styles.trasemelLogoText}>T</Text>
-            </View>
-            <View>
-              <Text style={styles.trasemeName}>TRASEME</Text>
-              <Text style={styles.traseemeRole}>Medicina e Segurança</Text>
-            </View>
+            <Image source={TRASEME_LOGO} style={styles.trasemeLogoImg} resizeMode="contain" />
           </View>
           <View style={styles.certHeaderRight}>
             <Text style={styles.certNumLabel}>Nº</Text>
@@ -187,12 +183,15 @@ export function CertificatePreviewScreen() {
           </View>
         </View>
 
-        {/* Seal */}
+        {/* Seal + logo */}
         <View style={styles.sealRow}>
           <View style={styles.seal}>
             <Text style={styles.sealText}>TRASEME{'\n'}CERTIFICA{'\n'}★</Text>
           </View>
-          <Text style={styles.sealDesc}>Documento autêntico emitido pela{'\n'}TRASEME Medicina e Segurança do Trabalho</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sealDesc}>Documento autêntico emitido pela{'\n'}TRASEME Medicina e Segurança do Trabalho</Text>
+          </View>
+          <Image source={TRASEME_LOGO} style={styles.sealLogo} resizeMode="contain" />
         </View>
       </View>
 
@@ -200,10 +199,15 @@ export function CertificatePreviewScreen() {
       {topicos.length > 0 && (
         <View style={[styles.certCard, { marginTop: 12 }]}>
           <View style={styles.certTopAccent} />
-          <Text style={styles.page2Title}>Conteúdo Programático</Text>
-          <Text style={styles.page2Sub}>
-            {certificate.course?.nome} · {certificate.course?.duracaoHoras}h
-          </Text>
+          <View style={styles.page2Header}>
+            <Image source={TRASEME_LOGO} style={styles.page2Logo} resizeMode="contain" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.page2Title}>Conteúdo Programático</Text>
+              <Text style={styles.page2Sub}>
+                {certificate.course?.nome} · {certificate.course?.duracaoHoras}h
+              </Text>
+            </View>
+          </View>
           <View style={styles.certDivider} />
           {topicos.map((t, i) => (
             <View key={i} style={[styles.topicoRow, i < topicos.length - 1 && styles.topicoRowBorder]}>
@@ -273,14 +277,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 16, paddingBottom: 14,
   },
-  certHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  trasemeLogo: {
-    width: 44, height: 44, borderRadius: 8,
-    backgroundColor: Colors.primary.dark, alignItems: 'center', justifyContent: 'center',
-  },
-  trasemelLogoText: { fontSize: 22, fontWeight: '900', color: Colors.white },
-  trasemeName: { fontSize: 13, fontWeight: '800', color: Colors.primary.dark, letterSpacing: 1 },
-  traseemeRole: { fontSize: 11, color: Colors.gray[500] },
+  certHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
+  trasemeLogoImg: { height: 52, width: 160 },
   certHeaderRight: { alignItems: 'flex-end' },
   certNumLabel: { fontSize: 10, color: Colors.gray[400], textTransform: 'uppercase', letterSpacing: 1 },
   certNumValue: { fontSize: 12, fontWeight: '700', color: Colors.primary.dark, fontFamily: 'monospace' },
@@ -351,9 +349,15 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   sealText: { fontSize: 9, fontWeight: '800', color: Colors.amber.main, textAlign: 'center', lineHeight: 13 },
-  sealDesc: { fontSize: 11, color: Colors.gray[500], flex: 1, lineHeight: 17 },
+  sealDesc: { fontSize: 11, color: Colors.gray[500], lineHeight: 17 },
+  sealLogo: { height: 36, width: 120, opacity: 0.55 },
 
-  page2Title: { fontSize: 20, fontWeight: '800', color: Colors.primary.dark, padding: 16, paddingBottom: 4 },
+  page2Header: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    padding: 16, paddingBottom: 0,
+  },
+  page2Logo: { height: 44, width: 140 },
+  page2Title: { fontSize: 18, fontWeight: '800', color: Colors.primary.dark, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 },
   page2Sub: { fontSize: 13, color: Colors.gray[500], paddingHorizontal: 16, marginBottom: 8 },
   topicoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
   topicoRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.border },
