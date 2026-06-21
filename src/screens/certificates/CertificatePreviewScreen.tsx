@@ -106,7 +106,6 @@ export function CertificatePreviewScreen() {
         <Text style={[styles.statusBannerText, expired ? styles.statusBannerTextExpired : styles.statusBannerTextValid]}>
           {expired ? 'Certificado VENCIDO' : 'Certificado VÁLIDO'}
         </Text>
-        <Text style={styles.certNumberBanner}>{certificate.numeroUnico}</Text>
       </View>
 
       {/* ── Certificate preview card ── */}
@@ -155,6 +154,26 @@ export function CertificatePreviewScreen() {
           </View>
         </View>
 
+        {/* Company block */}
+        {certificate.company && (
+          <View style={styles.companyBlock}>
+            <Text style={styles.companyBlockLabel}>Empresa</Text>
+            <Text style={styles.companyBlockName}>{certificate.company.razaoSocial}</Text>
+            <Text style={styles.companyBlockDetail}>CNPJ: {certificate.company.cnpj}</Text>
+            {[
+              certificate.company.endereco,
+              [certificate.company.cidade, certificate.company.estado].filter(Boolean).join('/'),
+            ].filter(Boolean).join(' — ') ? (
+              <Text style={styles.companyBlockDetail}>
+                {[
+                  certificate.company.endereco,
+                  [certificate.company.cidade, certificate.company.estado].filter(Boolean).join('/'),
+                ].filter(Boolean).join(' — ')}
+              </Text>
+            ) : null}
+          </View>
+        )}
+
         {/* Location */}
         <Text style={styles.location}>
           {certificate.localRealizacao}, {formatDateBR(certificate.dataRealizacao)}
@@ -177,13 +196,15 @@ export function CertificatePreviewScreen() {
           </View>
         </View>
 
-        {/* Seal + logo */}
+        {/* Seal + cert number + logo */}
         <View style={styles.sealRow}>
           <View style={styles.seal}>
             <Text style={styles.sealText}>TRASEME{'\n'}CERTIFICA{'\n'}★</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.sealDesc}>Documento autêntico emitido pela{'\n'}TRASEME Medicina e Segurança do Trabalho</Text>
+            <Text style={styles.certNumLabel}>Certificado Nº</Text>
+            <Text style={styles.certNumValue}>{certificate.numeroUnico}</Text>
+            <Text style={styles.sealDesc}>Documento autêntico — verifique a autenticidade</Text>
           </View>
           <Image source={TRASEME_LOGO} style={styles.sealLogo} resizeMode="contain" />
         </View>
@@ -257,8 +278,6 @@ const styles = StyleSheet.create({
   statusBannerText: { fontSize: 13, fontWeight: '700', flex: 1 },
   statusBannerTextValid: { color: Colors.primary.dark },
   statusBannerTextExpired: { color: Colors.gray[600] },
-  certNumberBanner: { fontSize: 11, color: Colors.gray[500], fontFamily: 'monospace' },
-
   certCard: {
     backgroundColor: Colors.white, borderRadius: 14,
     overflow: 'hidden', borderWidth: 2, borderColor: Colors.primary.dark,
@@ -327,6 +346,16 @@ const styles = StyleSheet.create({
   sigRole: { fontSize: 11, color: Colors.gray[500], textAlign: 'center', marginTop: 2 },
   sigDSST: { fontSize: 11, color: Colors.primary.main, fontWeight: '600', textAlign: 'center', marginTop: 2 },
 
+  companyBlock: {
+    marginHorizontal: 16, marginBottom: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderLeftWidth: 3, borderLeftColor: Colors.amber.main,
+    backgroundColor: Colors.gray[50], borderRadius: 4,
+  },
+  companyBlockLabel: { fontSize: 10, color: Colors.gray[500], textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  companyBlockName: { fontSize: 13, fontWeight: '700', color: Colors.primary.dark, marginBottom: 2 },
+  companyBlockDetail: { fontSize: 11, color: Colors.gray[600] },
+
   sealRow: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
     marginHorizontal: 16, marginBottom: 20, paddingTop: 12,
@@ -338,6 +367,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   sealText: { fontSize: 9, fontWeight: '800', color: Colors.amber.main, textAlign: 'center', lineHeight: 13 },
+  certNumLabel: { fontSize: 9, color: Colors.gray[500], textTransform: 'uppercase', letterSpacing: 0.5 },
+  certNumValue: { fontSize: 12, fontWeight: '700', color: Colors.primary.dark, fontFamily: 'monospace', marginBottom: 2 },
   sealDesc: { fontSize: 11, color: Colors.gray[500], lineHeight: 17 },
   sealLogo: { height: 36, width: 120, opacity: 0.55 },
 

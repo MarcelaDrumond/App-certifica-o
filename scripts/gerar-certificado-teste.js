@@ -16,7 +16,7 @@ const logoBase64 = `data:image/png;base64,${fs.readFileSync(logoPath).toString('
 const cert = {
   numeroUnico: 'TRS-2025-482391',
   employee:    { nomeCompleto: 'Maria Fernanda Oliveira Costa', funcao: 'Técnica de Enfermagem do Trabalho' },
-  company:     { razaoSocial: 'Indústrias Metalúrgicas São Paulo S.A.', cnpj: '12.345.678/0001-99', logoUri: null },
+  company:     { razaoSocial: 'Indústrias Metalúrgicas São Paulo S.A.', cnpj: '12.345.678/0001-99', endereco: 'Rua das Indústrias, 450', cidade: 'São Paulo', estado: 'SP', logoUri: null },
   course: {
     nome: 'NR-35 — Trabalho em Altura',
     duracaoHoras: 8,
@@ -47,128 +47,116 @@ function fmtDate(iso) {
 
 // ── Gerar HTML (mesma lógica de pdfService.ts) ─────────────────────────────
 function buildHtml() {
+  const addressLine = [
+    cert.company.endereco,
+    [cert.company.cidade, cert.company.estado].filter(Boolean).join('/'),
+  ].filter(Boolean).join(' — ');
+
+  const companyLogoHtml = `<div style="height:40px;width:40px;background:#E8F5E9;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:18px;font-weight:800;">${cert.company.razaoSocial.charAt(0)}</div>`;
+
   const topicosRows = cert.course.topicos.map((t, i) => `
     <tr style="background:${i%2===0?'#FAFAFA':'#FFFFFF'}">
-      <td style="padding:9px 14px;border-bottom:1px solid #E0E0E0;color:#1B5E20;font-weight:700;font-size:13px;width:40px;">${t.ordem}.</td>
-      <td style="padding:9px 14px;border-bottom:1px solid #E0E0E0;color:#424242;font-size:13px;line-height:1.6;">${t.topico}</td>
+      <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#1B5E20;font-weight:700;font-size:10px;width:36px;">${t.ordem}.</td>
+      <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#424242;font-size:10px;line-height:1.4;">${t.topico}</td>
     </tr>`).join('');
 
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Inter',Arial,sans-serif;background:#fff;color:#212121;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{font-family:'Inter',Arial,sans-serif;background:#fff;color:#212121;-webkit-print-color-adjust:exact;print-color-adjust:exact;width:210mm;height:297mm;overflow:hidden;}
 
-  /* ── PAGE WRAPPER ── */
-  .page{width:210mm;min-height:297mm;padding:0;position:relative;page-break-after:always;overflow:hidden;}
-  .outer-border{position:absolute;inset:10mm;border:3px solid #1B5E20;z-index:0;}
-  .inner-border{position:absolute;inset:13.5mm;border:1px solid #C9A227;z-index:0;}
-  .corner{position:absolute;width:22px;height:22px;border-color:#C9A227;border-style:solid;z-index:1;}
-  .tl{top:13mm;left:13mm;border-width:2px 0 0 2px;}
-  .tr{top:13mm;right:13mm;border-width:2px 2px 0 0;}
-  .bl{bottom:13mm;left:13mm;border-width:0 0 2px 2px;}
-  .br{bottom:13mm;right:13mm;border-width:0 2px 2px 0;}
-  .page-inner{position:relative;padding:18mm 21mm 16mm;min-height:297mm;z-index:2;display:flex;flex-direction:column;}
+  .half{width:210mm;height:148mm;position:relative;overflow:hidden;}
+  .outer-border{position:absolute;inset:5mm;border:2.5px solid #1B5E20;z-index:0;pointer-events:none;}
+  .inner-border{position:absolute;inset:8mm;border:1px solid #C9A227;z-index:0;pointer-events:none;}
+  .corner{position:absolute;width:14px;height:14px;border-color:#C9A227;border-style:solid;z-index:1;}
+  .tl{top:7.5mm;left:7.5mm;border-width:2px 0 0 2px;}
+  .tr{top:7.5mm;right:7.5mm;border-width:2px 2px 0 0;}
+  .bl{bottom:7.5mm;left:7.5mm;border-width:0 0 2px 2px;}
+  .br{bottom:7.5mm;right:7.5mm;border-width:0 2px 2px 0;}
+  .half-inner{position:relative;padding:10mm 12mm 8mm;height:148mm;z-index:2;display:flex;flex-direction:column;}
 
-  /* ── HEADER ── */
-  .header{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:2.5px solid #1B5E20;margin-bottom:14px;gap:16px;}
-  .header-logos{display:flex;align-items:center;justify-content:space-between;flex:1;}
-  .logo-sep{width:1px;height:56px;background:#E0E0E0;flex-shrink:0;}
-  .issuer{display:flex;flex-direction:column;gap:3px;flex:1;}
-  .issuer-name{font-size:9.5px;font-weight:700;color:#1B5E20;text-transform:uppercase;letter-spacing:.3px;line-height:1.4;}
-  .issuer-cnpj{font-size:9px;color:#9E9E9E;}
-  .cert-num{text-align:right;flex-shrink:0;}
-  .cert-num-lbl{font-size:8px;color:#BDBDBD;text-transform:uppercase;letter-spacing:1.5px;}
-  .cert-num-val{font-size:11px;font-weight:700;color:#1B5E20;letter-spacing:1px;font-family:monospace;}
+  .fold-line{width:210mm;height:1mm;border-top:1px dashed #BDBDBD;}
 
-  /* ── TITLE ── */
-  .title-block{text-align:center;padding:14px 0 8px;}
-  .cert-title{font-family:'Playfair Display',Georgia,serif;font-size:48px;font-weight:700;color:#1B5E20;letter-spacing:3px;line-height:1;margin-bottom:8px;}
-  .cert-subtitle{font-size:10px;color:#BDBDBD;text-transform:uppercase;letter-spacing:3px;}
+  .header{display:flex;align-items:center;justify-content:space-between;padding-bottom:7px;border-bottom:2px solid #1B5E20;margin-bottom:7px;}
 
-  /* ── DECO ── */
-  .deco{display:flex;align-items:center;gap:10px;margin:10px 20px;}
+  .cert-title{font-family:'Playfair Display',Georgia,serif;font-size:30px;font-weight:700;color:#1B5E20;letter-spacing:2px;text-align:center;line-height:1;margin-bottom:3px;}
+  .cert-subtitle{font-size:8px;color:#BDBDBD;text-transform:uppercase;letter-spacing:2.5px;text-align:center;}
+
+  .deco{display:flex;align-items:center;gap:8px;margin:5px 10px;}
   .deco::before,.deco::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,#C9A227,transparent);}
-  .diamond{width:8px;height:8px;background:#C9A227;transform:rotate(45deg);flex-shrink:0;}
+  .diamond{width:6px;height:6px;background:#C9A227;transform:rotate(45deg);flex-shrink:0;}
 
-  /* ── BODY ── */
-  .body{text-align:center;padding:0 8px;flex:1;}
-  .certifies{font-size:13px;color:#757575;margin-bottom:8px;line-height:1.6;}
-  .emp-name{font-family:'Playfair Display',Georgia,serif;font-size:32px;font-weight:700;color:#1B5E20;line-height:1.1;margin:6px 0 4px;letter-spacing:.5px;}
-  .emp-role{font-size:13px;color:#9E9E9E;margin-bottom:14px;}
+  .cert-body{text-align:center;flex:1;}
+  .certifies{font-size:9px;color:#757575;margin-bottom:3px;line-height:1.5;}
+  .emp-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:#1B5E20;line-height:1.15;margin:3px 0 2px;}
+  .emp-role{font-size:9px;color:#9E9E9E;margin-bottom:5px;}
 
-  .course-block{background:#E8F5E9;border-left:4px solid #2E7D32;border-radius:4px;padding:13px 18px;margin:12px 0;text-align:left;}
-  .course-label{font-size:9px;color:#9E9E9E;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;}
-  .course-name{font-family:'Playfair Display',Georgia,serif;font-size:19px;font-weight:700;color:#1B5E20;line-height:1.25;margin-bottom:8px;}
-  .course-meta{display:flex;gap:24px;}
-  .meta-col{display:flex;flex-direction:column;gap:2px;}
-  .meta-lbl{font-size:9px;color:#BDBDBD;text-transform:uppercase;letter-spacing:1px;}
-  .meta-val{font-size:14px;font-weight:700;color:#212121;}
+  .course-block{background:#E8F5E9;border-left:3px solid #2E7D32;border-radius:3px;padding:7px 12px;margin:4px 0;text-align:left;}
+  .course-label{font-size:7px;color:#9E9E9E;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;}
+  .course-name{font-family:'Playfair Display',Georgia,serif;font-size:13px;font-weight:700;color:#1B5E20;line-height:1.2;margin-bottom:4px;}
+  .course-meta{display:flex;gap:18px;}
+  .meta-col{display:flex;flex-direction:column;gap:1px;}
+  .meta-lbl{font-size:7px;color:#BDBDBD;text-transform:uppercase;letter-spacing:.8px;}
+  .meta-val{font-size:11px;font-weight:700;color:#212121;}
 
-  .company-block{background:#FAFAFA;border:1px solid #EEEEEE;border-radius:4px;padding:10px 16px;margin:10px 0;text-align:left;}
-  .company-lbl{font-size:9px;color:#BDBDBD;text-transform:uppercase;letter-spacing:2px;margin-bottom:3px;}
-  .company-name{font-size:14px;font-weight:700;color:#212121;}
-  .company-cnpj{font-size:11px;color:#9E9E9E;font-family:monospace;}
+  .company-block{background:#FAFAFA;border:1px solid #EEEEEE;border-radius:3px;padding:5px 12px;margin:4px 0;text-align:left;}
+  .company-lbl{font-size:7px;color:#BDBDBD;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;}
+  .company-name-val{font-size:11px;font-weight:700;color:#212121;line-height:1.3;}
+  .company-detail{font-size:8.5px;color:#9E9E9E;margin-top:1px;}
 
-  .loc-date{font-size:12px;color:#9E9E9E;text-align:center;font-style:italic;margin:12px 0;}
+  .loc-date{font-size:8px;color:#9E9E9E;text-align:center;font-style:italic;margin:4px 0;}
 
-  /* ── SIGNATURES ── */
-  .sigs{display:flex;justify-content:space-around;align-items:flex-end;gap:24px;margin-top:18px;}
-  .sig-block{flex:1;text-align:center;max-width:190px;}
-  .sig-line{border-top:1px solid #616161;padding-top:8px;margin-top:28px;}
-  .sig-name{font-size:11.5px;font-weight:700;color:#212121;text-transform:uppercase;letter-spacing:.3px;}
-  .sig-role{font-size:10px;color:#9E9E9E;margin-top:2px;}
-  .sig-dsst{font-size:10px;color:#1B5E20;font-weight:700;margin-top:2px;}
+  .sigs{display:flex;justify-content:space-around;align-items:flex-end;gap:12px;margin-top:4px;}
+  .sig-block{flex:1;text-align:center;}
+  .sig-line{border-top:1px solid #616161;padding-top:5px;margin-top:14px;}
+  .sig-name{font-size:9px;font-weight:700;color:#212121;text-transform:uppercase;letter-spacing:.2px;}
+  .sig-role{font-size:8px;color:#9E9E9E;margin-top:1px;}
+  .sig-dsst{font-size:8px;color:#1B5E20;font-weight:700;margin-top:1px;}
 
-  /* ── FOOTER ── */
-  .footer{display:flex;align-items:flex-end;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #EEEEEE;}
-  .seal{width:76px;height:76px;border-radius:50%;border:2.5px solid #C9A227;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;position:relative;flex-shrink:0;}
-  .seal::before{content:'';position:absolute;inset:5px;border-radius:50%;border:1px dashed #C9A227;}
-  .seal-text{font-size:7.5px;font-weight:800;color:#C9A227;text-transform:uppercase;letter-spacing:.5px;line-height:1.4;position:relative;z-index:1;}
-  .footer-center{flex:1;text-align:center;padding:0 16px;}
-  .footer-auth{font-size:9px;color:#BDBDBD;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
-  .footer-num{font-size:11px;font-weight:700;color:#424242;font-family:monospace;}
-  .footer-logo{height:40px;width:auto;opacity:.35;}
+  .footer{display:flex;align-items:center;justify-content:space-between;margin-top:5px;padding-top:5px;border-top:1px solid #EEEEEE;gap:8px;}
+  .seal{width:50px;height:50px;border-radius:50%;border:2px solid #C9A227;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;position:relative;flex-shrink:0;}
+  .seal::before{content:'';position:absolute;inset:4px;border-radius:50%;border:1px dashed #C9A227;}
+  .seal-text{font-size:6px;font-weight:800;color:#C9A227;text-transform:uppercase;letter-spacing:.3px;line-height:1.4;position:relative;z-index:1;}
+  .footer-center{flex:1;text-align:center;}
+  .cert-num-label{font-size:7px;color:#BDBDBD;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;}
+  .cert-num-value{font-size:10px;font-weight:700;color:#1B5E20;letter-spacing:1px;font-family:monospace;margin-bottom:3px;}
+  .footer-auth{font-size:7px;color:#BDBDBD;text-transform:uppercase;letter-spacing:.8px;}
 
-  /* ── PAGE 2 ── */
-  .p2-inner{position:relative;padding:18mm 21mm 22mm;min-height:297mm;z-index:2;display:flex;flex-direction:column;}
-  .p2-header{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #1B5E20;padding-bottom:12px;margin-bottom:18px;gap:16px;}
-  .p2-heading{}
-  .p2-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:#1B5E20;margin-bottom:3px;}
-  .p2-sub{font-size:11px;color:#9E9E9E;}
-  .topics-table{width:100%;border-collapse:collapse;flex:1;}
-  .topics-table thead th{background:#1B5E20;color:#fff;text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
-  .p2-footer{margin-top:auto;padding-top:14px;border-top:1px solid #EEEEEE;display:flex;align-items:center;justify-content:space-between;gap:16px;}
-  .p2-footer-issuer{font-size:9px;color:#BDBDBD;text-transform:uppercase;letter-spacing:.5px;line-height:1.6;}
-  .validity-badge{background:#FFF8E1;border:1px solid #C9A227;border-radius:6px;padding:8px 16px;text-align:center;flex-shrink:0;}
-  .validity-lbl{font-size:9px;color:#9E9E9E;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
-  .validity-date{font-size:13px;font-weight:800;color:#C9A227;}
+  .p2-heading{flex:1;padding-left:12px;}
+  .p2-title{font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;color:#1B5E20;margin-bottom:2px;}
+  .p2-sub{font-size:9px;color:#9E9E9E;}
+  .topics-table{width:100%;border-collapse:collapse;flex:1;margin-top:6px;}
+  .topics-table thead th{background:#1B5E20;color:#fff;text-align:left;padding:6px 10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+  .p2-footer{margin-top:auto;padding-top:7px;border-top:1px solid #EEEEEE;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .p2-issuer{font-size:8px;color:#BDBDBD;text-transform:uppercase;letter-spacing:.4px;line-height:1.6;flex:1;}
+  .validity-badge{background:#FFF8E1;border:1px solid #C9A227;border-radius:5px;padding:5px 12px;text-align:center;flex-shrink:0;}
+  .validity-lbl{font-size:7px;color:#9E9E9E;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px;}
+  .validity-date{font-size:11px;font-weight:800;color:#C9A227;}
 </style>
 </head>
 <body>
 
-<!-- ════════════════════ PÁGINA 1 ════════════════════ -->
-<div class="page">
+<!-- ════════ FRENTE: CERTIFICADO ════════ -->
+<div class="half">
   <div class="outer-border"></div><div class="inner-border"></div>
   <div class="corner tl"></div><div class="corner tr"></div>
   <div class="corner bl"></div><div class="corner br"></div>
-  <div class="page-inner">
+  <div class="half-inner">
 
     <div class="header">
-      <div class="header-logos">
-        <img src="${logoBase64}" style="height:68px;width:auto;object-fit:contain;" alt="Traseme"/>
-        <div style="height:60px;width:60px;background:#E8F5E9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:22px;font-weight:800;">${cert.company.razaoSocial.charAt(0)}</div>
-      </div>
+      <img src="${logoBase64}" style="height:44px;width:auto;object-fit:contain;" alt="Traseme"/>
+      ${companyLogoHtml}
     </div>
 
-    <div class="title-block">
+    <div style="text-align:center;padding:3px 0 2px;">
       <div class="cert-title">Certificado</div>
       <div class="cert-subtitle">de Conclusão de Treinamento</div>
     </div>
 
     <div class="deco"><div class="diamond"></div></div>
 
-    <div class="body">
+    <div class="cert-body">
       <div class="certifies">Certificamos que o profissional abaixo identificado participou e concluiu<br/>com aproveitamento o treinamento especificado neste documento.</div>
       <div class="emp-name">${cert.employee.nomeCompleto}</div>
       <div class="emp-role">${cert.employee.funcao}</div>
@@ -182,10 +170,15 @@ function buildHtml() {
         </div>
       </div>
 
+      <div class="company-block">
+        <div class="company-lbl">Empresa</div>
+        <div class="company-name-val">${cert.company.razaoSocial}</div>
+        <div class="company-detail">CNPJ: ${cert.company.cnpj}</div>
+        ${addressLine ? `<div class="company-detail">${addressLine}</div>` : ''}
+      </div>
+
       <div class="loc-date">${cert.localRealizacao}, ${fmtDate(cert.dataRealizacao)}</div>
     </div>
-
-    <div class="deco"><div class="diamond"></div></div>
 
     <div class="sigs">
       <div class="sig-block">
@@ -206,23 +199,28 @@ function buildHtml() {
     <div class="footer">
       <div class="seal"><div class="seal-text">TRASEME<br/>CERTIFICA<br/>✦</div></div>
       <div class="footer-center">
+        <div class="cert-num-label">Certificado Nº</div>
+        <div class="cert-num-value">${cert.numeroUnico}</div>
         <div class="footer-auth">Documento autêntico — verifique a autenticidade</div>
       </div>
-      <img src="${logoBase64}" class="footer-logo" alt=""/>
+      <img src="${logoBase64}" style="height:28px;width:auto;opacity:.3;" alt=""/>
     </div>
 
   </div>
 </div>
 
-<!-- ════════════════════ PÁGINA 2 ════════════════════ -->
-<div class="page">
+<!-- ════════ LINHA DE DOBRA ════════ -->
+<div class="fold-line"></div>
+
+<!-- ════════ VERSO: CONTEÚDO PROGRAMÁTICO ════════ -->
+<div class="half">
   <div class="outer-border"></div><div class="inner-border"></div>
   <div class="corner tl"></div><div class="corner tr"></div>
   <div class="corner bl"></div><div class="corner br"></div>
-  <div class="p2-inner">
+  <div class="half-inner">
 
-    <div class="p2-header">
-      <img src="${logoBase64}" style="height:56px;width:auto;object-fit:contain;flex-shrink:0;" alt="Traseme"/>
+    <div class="header">
+      <img src="${logoBase64}" style="height:44px;width:auto;object-fit:contain;flex-shrink:0;" alt="Traseme"/>
       <div class="p2-heading">
         <div class="p2-title">Conteúdo Programático</div>
         <div class="p2-sub">${cert.course.nome} &nbsp;·&nbsp; ${cert.course.duracaoHoras} horas</div>
@@ -230,11 +228,15 @@ function buildHtml() {
     </div>
 
     <table class="topics-table">
-      <thead><tr><th style="width:52px;">Item</th><th>Tópico</th></tr></thead>
+      <thead><tr><th style="width:42px;">Item</th><th>Tópico</th></tr></thead>
       <tbody>${topicosRows}</tbody>
     </table>
 
     <div class="p2-footer">
+      <div class="p2-issuer">
+        TRASEME MEDICINA E SEGURANÇA DO TRABALHO LTDA<br/>
+        CNPJ: 34.046.480/0001-43
+      </div>
       <div class="validity-badge">
         <div class="validity-lbl">Válido até</div>
         <div class="validity-date">${fmtDate(cert.dataValidade)}</div>

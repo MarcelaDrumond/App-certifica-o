@@ -60,21 +60,31 @@ function generateCertificateHtml(
   const techDSST = cert.technician?.registroDSST ?? '';
   const techFuncao = cert.technician?.funcao ?? '';
   const companyName = cert.company?.razaoSocial ?? '';
+  const companyCNPJ = cert.company?.cnpj ?? '';
+  const companyEndereco = cert.company?.endereco ?? '';
+  const companyCidade = cert.company?.cidade ?? '';
+  const companyEstado = cert.company?.estado ?? '';
+  const certNumber = cert.numeroUnico;
+
+  const addressLine = [
+    companyEndereco,
+    [companyCidade, companyEstado].filter(Boolean).join('/'),
+  ].filter(Boolean).join(' — ');
 
   const trasemeLogoHtml = trasemeLogoBase64
-    ? `<img src="${trasemeLogoBase64}" style="height:68px;width:auto;object-fit:contain;display:block;" alt="Traseme" />`
-    : `<div style="height:68px;width:140px;background:#1B5E20;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:900;letter-spacing:2px;">TRASEME</div>`;
+    ? `<img src="${trasemeLogoBase64}" style="height:44px;width:auto;object-fit:contain;display:block;" alt="Traseme" />`
+    : `<div style="height:44px;width:110px;background:#1B5E20;border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:900;letter-spacing:1px;">TRASEME</div>`;
 
   const companyLogoHtml = companyLogoBase64
-    ? `<img src="${companyLogoBase64}" style="height:60px;width:auto;max-width:130px;object-fit:contain;display:block;" alt="${companyName}" />`
-    : `<div style="height:60px;width:60px;background:#E8F5E9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:22px;font-weight:800;">${companyName.charAt(0)}</div>`;
+    ? `<img src="${companyLogoBase64}" style="height:40px;width:auto;max-width:110px;object-fit:contain;display:block;" alt="${companyName}" />`
+    : `<div style="height:40px;width:40px;background:#E8F5E9;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:18px;font-weight:800;">${companyName.charAt(0)}</div>`;
 
   const topicosHtml = topicos
     .map(
       (t, i) =>
         `<tr style="background:${i % 2 === 0 ? '#FAFAFA' : '#FFFFFF'};">
-          <td style="padding:9px 14px;border-bottom:1px solid #E0E0E0;color:#1B5E20;font-weight:700;font-size:13px;width:40px;white-space:nowrap;">${t.ordem}.</td>
-          <td style="padding:9px 14px;border-bottom:1px solid #E0E0E0;color:#424242;font-size:13px;line-height:1.5;">${t.topico}</td>
+          <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#1B5E20;font-weight:700;font-size:10px;width:36px;white-space:nowrap;">${t.ordem}.</td>
+          <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#424242;font-size:10px;line-height:1.4;">${t.topico}</td>
         </tr>`
     )
     .join('');
@@ -95,45 +105,55 @@ function generateCertificateHtml(
     color: #212121;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  .page {
     width: 210mm;
-    min-height: 297mm;
-    padding: 0;
-    position: relative;
-    page-break-after: always;
+    height: 297mm;
     overflow: hidden;
   }
 
-  /* Dupla moldura */
+  /* ── METADE (frente / verso) ── */
+  .half {
+    width: 210mm;
+    height: 148mm;
+    position: relative;
+    overflow: hidden;
+  }
+
   .outer-border {
     position: absolute;
-    inset: 10mm;
-    border: 3px solid #1B5E20;
+    inset: 5mm;
+    border: 2.5px solid #1B5E20;
     z-index: 0;
+    pointer-events: none;
   }
+
   .inner-border {
     position: absolute;
-    inset: 13.5mm;
+    inset: 8mm;
     border: 1px solid #C9A227;
     z-index: 0;
+    pointer-events: none;
   }
 
-  /* Ornamentos de canto */
-  .corner { position: absolute; width: 22px; height: 22px; border-color: #C9A227; border-style: solid; z-index: 1; }
-  .tl { top: 13mm; left: 13mm; border-width: 2px 0 0 2px; }
-  .tr { top: 13mm; right: 13mm; border-width: 2px 2px 0 0; }
-  .bl { bottom: 13mm; left: 13mm; border-width: 0 0 2px 2px; }
-  .br { bottom: 13mm; right: 13mm; border-width: 0 2px 2px 0; }
+  .corner { position: absolute; width: 14px; height: 14px; border-color: #C9A227; border-style: solid; z-index: 1; }
+  .tl { top: 7.5mm; left: 7.5mm; border-width: 2px 0 0 2px; }
+  .tr { top: 7.5mm; right: 7.5mm; border-width: 2px 2px 0 0; }
+  .bl { bottom: 7.5mm; left: 7.5mm; border-width: 0 0 2px 2px; }
+  .br { bottom: 7.5mm; right: 7.5mm; border-width: 0 2px 2px 0; }
 
-  .page-inner {
+  .half-inner {
     position: relative;
-    padding: 18mm 21mm 16mm;
-    min-height: 297mm;
+    padding: 10mm 12mm 8mm;
+    height: 148mm;
     z-index: 2;
     display: flex;
     flex-direction: column;
+  }
+
+  /* ── LINHA DE DOBRA ── */
+  .fold-line {
+    width: 210mm;
+    height: 1mm;
+    border-top: 1px dashed #BDBDBD;
   }
 
   /* ── CABEÇALHO ── */
@@ -141,96 +161,36 @@ function generateCertificateHtml(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 12px;
-    border-bottom: 2.5px solid #1B5E20;
-    margin-bottom: 14px;
-    gap: 16px;
+    padding-bottom: 7px;
+    border-bottom: 2px solid #1B5E20;
+    margin-bottom: 7px;
   }
 
-  .header-logos {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1;
-  }
-
-  .logo-separator {
-    width: 1px;
-    height: 56px;
-    background: #E0E0E0;
-    flex-shrink: 0;
-  }
-
-  .issuer-block {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    flex: 1;
-  }
-
-  .issuer-name {
-    font-size: 9.5px;
-    font-weight: 700;
-    color: #1B5E20;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    line-height: 1.4;
-  }
-
-  .issuer-cnpj {
-    font-size: 9px;
-    color: #9E9E9E;
-  }
-
-  .header-right {
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  .cert-n-label {
-    font-size: 8px;
-    color: #BDBDBD;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-  }
-
-  .cert-n-value {
-    font-size: 11px;
-    font-weight: 700;
-    color: #1B5E20;
-    letter-spacing: 1px;
-    font-family: monospace;
-  }
-
-  /* ── TÍTULO ── */
-  .title-block {
-    text-align: center;
-    padding: 14px 0 8px;
-  }
-
+  /* ── FRENTE: CERTIFICADO ── */
   .cert-title {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 48px;
+    font-size: 30px;
     font-weight: 700;
     color: #1B5E20;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
+    text-align: center;
     line-height: 1;
-    margin-bottom: 8px;
+    margin-bottom: 3px;
   }
 
   .cert-subtitle {
-    font-size: 10px;
+    font-size: 8px;
     color: #BDBDBD;
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2.5px;
+    text-align: center;
   }
 
-  /* Linha decorativa âmbar */
   .deco {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin: 10px 20px;
+    gap: 8px;
+    margin: 5px 10px;
   }
   .deco::before, .deco::after {
     content: '';
@@ -239,206 +199,109 @@ function generateCertificateHtml(
     background: linear-gradient(to right, transparent, #C9A227, transparent);
   }
   .deco-diamond {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: #C9A227;
     transform: rotate(45deg);
     flex-shrink: 0;
   }
 
-  /* ── CORPO ── */
-  .body {
-    text-align: center;
-    padding: 0 8px;
-    flex: 1;
-  }
+  .cert-body { text-align: center; flex: 1; }
 
   .certifies-text {
-    font-size: 13px;
+    font-size: 9px;
     color: #757575;
-    margin-bottom: 8px;
-    line-height: 1.6;
+    margin-bottom: 3px;
+    line-height: 1.5;
   }
 
   .employee-name {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 32px;
+    font-size: 20px;
     font-weight: 700;
     color: #1B5E20;
-    line-height: 1.1;
-    margin: 6px 0 4px;
-    letter-spacing: 0.5px;
+    line-height: 1.15;
+    margin: 3px 0 2px;
   }
 
-  .employee-role {
-    font-size: 13px;
-    color: #9E9E9E;
-    margin-bottom: 14px;
-  }
+  .employee-role { font-size: 9px; color: #9E9E9E; margin-bottom: 5px; }
 
-  /* Bloco do curso */
   .course-block {
     background: #E8F5E9;
-    border-left: 4px solid #2E7D32;
-    border-radius: 4px;
-    padding: 13px 18px;
-    margin: 12px 0;
+    border-left: 3px solid #2E7D32;
+    border-radius: 3px;
+    padding: 7px 12px;
+    margin: 4px 0;
     text-align: left;
   }
 
-  .course-label {
-    font-size: 9px;
-    color: #9E9E9E;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 4px;
-  }
+  .course-label { font-size: 7px; color: #9E9E9E; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
 
   .course-name {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 19px;
+    font-size: 13px;
     font-weight: 700;
     color: #1B5E20;
-    line-height: 1.25;
-    margin-bottom: 8px;
+    line-height: 1.2;
+    margin-bottom: 4px;
   }
 
-  .course-meta {
-    display: flex;
-    gap: 24px;
-  }
+  .course-meta { display: flex; gap: 18px; }
+  .meta-col { display: flex; flex-direction: column; gap: 1px; }
+  .meta-lbl { font-size: 7px; color: #BDBDBD; text-transform: uppercase; letter-spacing: 0.8px; }
+  .meta-val { font-size: 11px; font-weight: 700; color: #212121; }
 
-  .meta-col {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .meta-lbl {
-    font-size: 9px;
-    color: #BDBDBD;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .meta-val {
-    font-size: 14px;
-    font-weight: 700;
-    color: #212121;
-  }
-
-  /* Bloco da empresa cliente */
   .company-block {
     background: #FAFAFA;
     border: 1px solid #EEEEEE;
-    border-radius: 4px;
-    padding: 10px 16px;
-    margin: 10px 0;
+    border-radius: 3px;
+    padding: 5px 12px;
+    margin: 4px 0;
     text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 14px;
   }
 
-  .company-logo-cell {
-    flex-shrink: 0;
-  }
+  .company-lbl { font-size: 7px; color: #BDBDBD; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
+  .company-name-val { font-size: 11px; font-weight: 700; color: #212121; line-height: 1.3; }
+  .company-detail { font-size: 8.5px; color: #9E9E9E; margin-top: 1px; }
 
-  .company-text {
-    flex: 1;
-  }
+  .location-date { font-size: 8px; color: #9E9E9E; text-align: center; font-style: italic; margin: 4px 0; }
 
-  .company-lbl {
-    font-size: 9px;
-    color: #BDBDBD;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 3px;
-  }
-
-  .company-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: #212121;
-  }
-
-  .company-cnpj {
-    font-size: 11px;
-    color: #9E9E9E;
-    font-family: monospace;
-  }
-
-  .location-date {
-    font-size: 12px;
-    color: #9E9E9E;
-    text-align: center;
-    font-style: italic;
-    margin: 12px 0;
-  }
-
-  /* ── ASSINATURAS ── */
   .signatures {
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
-    gap: 24px;
-    margin-top: 18px;
+    gap: 12px;
+    margin-top: 4px;
   }
 
-  .sig-block {
-    flex: 1;
-    text-align: center;
-    max-width: 190px;
-  }
+  .sig-block { flex: 1; text-align: center; }
 
-  .sig-line {
-    border-top: 1px solid #616161;
-    padding-top: 8px;
-    margin-top: 28px;
-  }
+  .sig-line { border-top: 1px solid #616161; padding-top: 5px; margin-top: 14px; }
+  .sig-name { font-size: 9px; font-weight: 700; color: #212121; text-transform: uppercase; letter-spacing: 0.2px; }
+  .sig-role { font-size: 8px; color: #9E9E9E; margin-top: 1px; }
+  .sig-dsst { font-size: 8px; color: #1B5E20; font-weight: 700; margin-top: 1px; }
 
-  .sig-name {
-    font-size: 11.5px;
-    font-weight: 700;
-    color: #212121;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .sig-role {
-    font-size: 10px;
-    color: #9E9E9E;
-    margin-top: 2px;
-  }
-
-  .sig-dsst {
-    font-size: 10px;
-    color: #1B5E20;
-    font-weight: 700;
-    margin-top: 2px;
-  }
-
-  /* ── RODAPÉ / SELO ── */
-  .footer {
+  .cert-footer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    margin-top: 16px;
-    padding-top: 12px;
+    margin-top: 5px;
+    padding-top: 5px;
     border-top: 1px solid #EEEEEE;
+    gap: 8px;
   }
 
   .seal {
-    width: 76px;
-    height: 76px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    border: 2.5px solid #C9A227;
+    border: 2px solid #C9A227;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 6px;
+    padding: 4px;
     position: relative;
     flex-shrink: 0;
   }
@@ -446,185 +309,125 @@ function generateCertificateHtml(
   .seal::before {
     content: '';
     position: absolute;
-    inset: 5px;
+    inset: 4px;
     border-radius: 50%;
     border: 1px dashed #C9A227;
   }
 
   .seal-text {
-    font-size: 7.5px;
+    font-size: 6px;
     font-weight: 800;
     color: #C9A227;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     line-height: 1.4;
     position: relative;
     z-index: 1;
   }
 
-  .footer-center {
-    flex: 1;
-    text-align: center;
-    padding: 0 16px;
-  }
+  .footer-center { flex: 1; text-align: center; }
 
-  .footer-auth {
-    font-size: 9px;
+  .cert-num-label {
+    font-size: 7px;
     color: #BDBDBD;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 3px;
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
   }
 
-  .footer-num {
-    font-size: 11px;
-    font-weight: 700;
-    color: #424242;
-    font-family: monospace;
-  }
-
-  /* ═══════════ PÁGINA 2 ═══════════ */
-  .page2 {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 0;
-    position: relative;
-  }
-
-  .page2-inner {
-    position: relative;
-    padding: 18mm 21mm 22mm;
-    min-height: 297mm;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .page2-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2.5px solid #1B5E20;
-    padding-bottom: 12px;
-    margin-bottom: 18px;
-    gap: 16px;
-  }
-
-  .page2-logo {
-    flex-shrink: 0;
-  }
-
-  .page2-heading {
-    flex: 1;
-  }
-
-  .page2-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 22px;
+  .cert-num-value {
+    font-size: 10px;
     font-weight: 700;
     color: #1B5E20;
+    letter-spacing: 1px;
+    font-family: monospace;
     margin-bottom: 3px;
   }
 
-  .page2-sub {
-    font-size: 11px;
-    color: #9E9E9E;
+  .footer-auth { font-size: 7px; color: #BDBDBD; text-transform: uppercase; letter-spacing: 0.8px; }
+
+  /* ── VERSO: CONTEÚDO PROGRAMÁTICO ── */
+  .p2-heading { flex: 1; padding-left: 12px; }
+
+  .p2-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1B5E20;
+    margin-bottom: 2px;
   }
 
-  .topics-table {
-    width: 100%;
-    border-collapse: collapse;
-    flex: 1;
-  }
+  .p2-sub { font-size: 9px; color: #9E9E9E; }
+
+  .topics-table { width: 100%; border-collapse: collapse; flex: 1; margin-top: 6px; }
 
   .topics-table thead th {
     background: #1B5E20;
     color: #FFFFFF;
     text-align: left;
-    padding: 10px 14px;
-    font-size: 11px;
+    padding: 6px 10px;
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
   }
 
-  .page2-footer {
+  .p2-footer {
     margin-top: auto;
-    padding-top: 14px;
+    padding-top: 7px;
     border-top: 1px solid #EEEEEE;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
   }
 
-  .page2-footer-left {
-    flex: 1;
-  }
-
-  .page2-footer-issuer {
-    font-size: 9px;
+  .p2-footer-issuer {
+    font-size: 8px;
     color: #BDBDBD;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     line-height: 1.6;
+    flex: 1;
   }
 
   .validity-badge {
     background: #FFF8E1;
     border: 1px solid #C9A227;
-    border-radius: 6px;
-    padding: 8px 16px;
+    border-radius: 5px;
+    padding: 5px 12px;
     text-align: center;
     flex-shrink: 0;
   }
 
-  .validity-lbl {
-    font-size: 9px;
-    color: #9E9E9E;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-  }
-
-  .validity-date {
-    font-size: 13px;
-    font-weight: 800;
-    color: #C9A227;
-  }
+  .validity-lbl { font-size: 7px; color: #9E9E9E; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1px; }
+  .validity-date { font-size: 11px; font-weight: 800; color: #C9A227; }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════ PÁGINA 1 ════════════════════ -->
-<div class="page">
+<!-- ════════════════════ FRENTE: CERTIFICADO ════════════════════ -->
+<div class="half">
   <div class="outer-border"></div>
   <div class="inner-border"></div>
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
 
-  <div class="page-inner">
+  <div class="half-inner">
 
-    <!-- Cabeçalho com logo Traseme + logo empresa -->
     <div class="header">
-      <div class="header-logos">
-        ${trasemeLogoHtml}
-        <div class="company-logo-cell">${companyLogoHtml}</div>
-      </div>
+      ${trasemeLogoHtml}
+      ${companyLogoHtml}
     </div>
 
-    <!-- Título -->
-    <div class="title-block">
+    <div style="text-align:center;padding:3px 0 2px;">
       <div class="cert-title">Certificado</div>
       <div class="cert-subtitle">de Conclusão de Treinamento</div>
     </div>
 
     <div class="deco"><div class="deco-diamond"></div></div>
 
-    <!-- Corpo -->
-    <div class="body">
+    <div class="cert-body">
       <div class="certifies-text">
         Certificamos que o profissional abaixo identificado participou e concluiu<br/>
         com aproveitamento o treinamento especificado neste documento.
@@ -648,12 +451,16 @@ function generateCertificateHtml(
         </div>
       </div>
 
+      <div class="company-block">
+        <div class="company-lbl">Empresa</div>
+        <div class="company-name-val">${companyName}</div>
+        <div class="company-detail">CNPJ: ${companyCNPJ}</div>
+        ${addressLine ? `<div class="company-detail">${addressLine}</div>` : ''}
+      </div>
+
       <div class="location-date">${localDate}</div>
     </div>
 
-    <div class="deco"><div class="deco-diamond"></div></div>
-
-    <!-- Assinaturas -->
     <div class="signatures">
       <div class="sig-block">
         <div class="sig-line">
@@ -670,56 +477,58 @@ function generateCertificateHtml(
       </div>
     </div>
 
-    <!-- Rodapé -->
-    <div class="footer">
+    <div class="cert-footer">
       <div class="seal">
         <div class="seal-text">TRASEME<br/>CERTIFICA<br/>✦</div>
       </div>
       <div class="footer-center">
+        <div class="cert-num-label">Certificado Nº</div>
+        <div class="cert-num-value">${certNumber}</div>
         <div class="footer-auth">Documento autêntico — verifique a autenticidade</div>
       </div>
-      ${trasemeLogoBase64 ? `<img src="${trasemeLogoBase64}" style="height:40px;width:auto;object-fit:contain;opacity:0.35;" alt="" />` : ''}
+      ${trasemeLogoBase64 ? `<img src="${trasemeLogoBase64}" style="height:28px;width:auto;opacity:0.3;" alt="" />` : ''}
     </div>
 
   </div>
 </div>
 
-<!-- ════════════════════ PÁGINA 2 ════════════════════ -->
-<div class="page2">
+<!-- ════════════════════ LINHA DE DOBRA ════════════════════ -->
+<div class="fold-line"></div>
+
+<!-- ════════════════════ VERSO: CONTEÚDO PROGRAMÁTICO ════════════════════ -->
+<div class="half">
   <div class="outer-border"></div>
   <div class="inner-border"></div>
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
 
-  <div class="page2-inner">
+  <div class="half-inner">
 
-    <div class="page2-header">
-      <div class="page2-logo">
-        ${trasemeLogoHtml}
-      </div>
-      <div class="page2-heading">
-        <div class="page2-title">Conteúdo Programático</div>
-        <div class="page2-sub">
-          ${courseName} &nbsp;·&nbsp; ${duracaoHoras} horas
-        </div>
+    <div class="header">
+      ${trasemeLogoHtml}
+      <div class="p2-heading">
+        <div class="p2-title">Conteúdo Programático</div>
+        <div class="p2-sub">${courseName} &nbsp;·&nbsp; ${duracaoHoras} horas</div>
       </div>
     </div>
 
     <table class="topics-table">
       <thead>
         <tr>
-          <th style="width:52px;">Item</th>
+          <th style="width:42px;">Item</th>
           <th>Tópico</th>
         </tr>
       </thead>
       <tbody>
-        ${topicosHtml || '<tr><td colspan="2" style="padding:20px;text-align:center;color:#9E9E9E;">Nenhum tópico cadastrado.</td></tr>'}
+        ${topicosHtml || '<tr><td colspan="2" style="padding:14px;text-align:center;color:#9E9E9E;font-size:10px;">Nenhum tópico cadastrado.</td></tr>'}
       </tbody>
     </table>
 
-    <div class="page2-footer">
+    <div class="p2-footer">
+      <div class="p2-footer-issuer">
+        ${TRASEME_NAME}<br/>
+        CNPJ: ${TRASEME_CNPJ}
+      </div>
       <div class="validity-badge">
         <div class="validity-lbl">Válido até</div>
         <div class="validity-date">${formatDateBR(cert.dataValidade)}</div>
