@@ -32,8 +32,7 @@
         {
           "photosPermission": "O app precisa de acesso às fotos para adicionar logos das empresas."
         }
-      ],
-      "expo-sqlite"
+      ]
     ]
   }
 }
