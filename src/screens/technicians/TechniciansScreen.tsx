@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -58,7 +59,11 @@ export function TechniciansScreen() {
       activeOpacity={0.8}
     >
       <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.nomeCompleto.charAt(0)}</Text>
+        {item.fotoUri ? (
+          <Image source={{ uri: item.fotoUri }} style={styles.avatarImage} />
+        ) : (
+          <Text style={styles.avatarText}>{item.nomeCompleto.charAt(0)}</Text>
+        )}
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{item.nomeCompleto}</Text>
@@ -142,7 +147,9 @@ const styles = StyleSheet.create({
   avatar: {
     width: 52, height: 52, borderRadius: 26,
     backgroundColor: Colors.primary.pale, alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
   },
+  avatarImage: { width: 52, height: 52, borderRadius: 26 },
   avatarText: { fontSize: 22, fontWeight: '700', color: Colors.primary.main },
   cardContent: { flex: 1 },
   cardTitle: { fontSize: 15, fontWeight: '700', color: Colors.gray[900], marginBottom: 3 },
