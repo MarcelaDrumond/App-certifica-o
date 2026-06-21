@@ -352,7 +352,7 @@ function buildCertPageHtml(
   cert: Certificate,
   trasemeLogoBase64: string,
   companyLogoBase64?: string,
-  technicianPhotoBase64?: string
+  technicianSignatureBase64?: string
 ): string {
   const topicos = cert.course?.topicos ?? [];
   const employeeName = cert.employee?.nomeCompleto ?? '';
@@ -458,7 +458,9 @@ function buildCertPageHtml(
         </div>
       </div>
       <div class="sig-block">
-        ${technicianPhotoBase64 ? `<img src="${technicianPhotoBase64}" style="width:48px;height:48px;object-fit:cover;border-radius:50%;border:2px solid #1B5E20;display:block;margin:0 auto 4px;" />` : ''}
+        <div style="height:52px;display:flex;align-items:flex-end;justify-content:center;">
+          ${technicianSignatureBase64 ? `<img src="${technicianSignatureBase64}" style="max-height:50px;width:auto;max-width:150px;object-fit:contain;display:block;" />` : ''}
+        </div>
         <div class="sig-line">
           <div class="sig-name">${techName}</div>
           <div class="sig-role">${techFuncao}</div>
@@ -548,7 +550,7 @@ function generateCertificateHtml(
   cert: Certificate,
   trasemeLogoBase64: string,
   companyLogoBase64?: string,
-  technicianPhotoBase64?: string
+  technicianSignatureBase64?: string
 ): string {
   return wrapHtml(
     `<div class="cert-page">${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64, technicianPhotoBase64)}</div>`
@@ -559,7 +561,7 @@ function generateBatchCertificateHtml(
   certs: Certificate[],
   trasemeLogoBase64: string,
   companyLogoBase64?: string,
-  technicianPhotoBase64?: string
+  technicianSignatureBase64?: string
 ): string {
   const pages = certs
     .map((cert, i) => {
@@ -608,7 +610,7 @@ export async function generateAndSharePdf(cert: Certificate): Promise<string> {
   const [trasemeLogo, companyLogo, techPhoto] = await Promise.all([
     getLogoBase64(),
     cert.company?.logoUri ? getCompanyLogoBase64(cert.company.logoUri) : Promise.resolve(''),
-    cert.technician?.fotoUri ? getCompanyLogoBase64(cert.technician.fotoUri) : Promise.resolve(''),
+    cert.technician?.assinaturaUri ? getCompanyLogoBase64(cert.technician.assinaturaUri) : Promise.resolve(''),
   ]);
 
   const html = generateCertificateHtml(cert, trasemeLogo, companyLogo || undefined, techPhoto || undefined);
@@ -634,7 +636,7 @@ export async function generateBatchAndSharePdf(certs: Certificate[]): Promise<vo
   if (certs.length === 0) return;
 
   const companyLogoUri = certs[0]?.company?.logoUri ?? '';
-  const techFotoUri = certs[0]?.technician?.fotoUri ?? '';
+  const techFotoUri = certs[0]?.technician?.assinaturaUri ?? '';
   const [trasemeLogo, companyLogo, techPhoto] = await Promise.all([
     getLogoBase64(),
     companyLogoUri ? getCompanyLogoBase64(companyLogoUri) : Promise.resolve(''),
@@ -663,7 +665,7 @@ export async function printCertificate(cert: Certificate): Promise<void> {
   const [trasemeLogo, companyLogo, techPhoto] = await Promise.all([
     getLogoBase64(),
     cert.company?.logoUri ? getCompanyLogoBase64(cert.company.logoUri) : Promise.resolve(''),
-    cert.technician?.fotoUri ? getCompanyLogoBase64(cert.technician.fotoUri) : Promise.resolve(''),
+    cert.technician?.assinaturaUri ? getCompanyLogoBase64(cert.technician.assinaturaUri) : Promise.resolve(''),
   ]);
 
   const html = generateCertificateHtml(cert, trasemeLogo, companyLogo || undefined, techPhoto || undefined);

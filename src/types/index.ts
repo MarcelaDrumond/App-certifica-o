@@ -26,7 +26,7 @@ export interface Technician {
   nomeCompleto: string;
   funcao: string;
   registroDSST: string;
-  fotoUri?: string;
+  assinaturaUri?: string;
   createdAt: string;
 }
 

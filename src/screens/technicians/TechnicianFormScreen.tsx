@@ -45,7 +45,7 @@ export function TechnicianFormScreen() {
   const technicianId = route.params?.technicianId;
   const isEditing = !!technicianId;
   const [saving, setSaving] = useState(false);
-  const [fotoUri, setFotoUri] = useState<string | undefined>();
+  const [assinaturaUri, setAssinaturaUri] = useState<string | undefined>();
 
   const {
     control,
@@ -66,28 +66,28 @@ export function TechnicianFormScreen() {
           funcao: tech.funcao,
           registroDSST: tech.registroDSST,
         });
-        setFotoUri(tech.fotoUri);
+        setAssinaturaUri(tech.assinaturaUri);
       }
     }
   }, [technicianId, isEditing, reset]);
 
-  const pickFoto = async () => {
+  const pickAssinatura = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Permita o acesso à galeria para selecionar a foto.');
+      Alert.alert('Permissão necessária', 'Permita o acesso à galeria para selecionar a assinatura.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
+      aspect: [5, 2],
+      quality: 0.9,
     });
     if (!result.canceled && result.assets[0]) {
       const source = result.assets[0].uri;
-      const dest = FileSystem.documentDirectory + `tech_foto_${Date.now()}.jpg`;
+      const dest = FileSystem.documentDirectory + `tech_assinatura_${Date.now()}.jpg`;
       await FileSystem.copyAsync({ from: source, to: dest });
-      setFotoUri(dest);
+      setAssinaturaUri(dest);
     }
   };
 
@@ -95,9 +95,9 @@ export function TechnicianFormScreen() {
     setSaving(true);
     try {
       if (isEditing && technicianId) {
-        updateTechnician(technicianId, { ...data, fotoUri });
+        updateTechnician(technicianId, { ...data, assinaturaUri });
       } else {
-        insertTechnician({ ...data, fotoUri });
+        insertTechnician({ ...data, assinaturaUri });
       }
       navigation.goBack();
     } catch (e: any) {
@@ -117,25 +117,30 @@ export function TechnicianFormScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.sectionTitle}>Foto do Responsável Técnico</Text>
-        <TouchableOpacity style={styles.fotoPicker} onPress={pickFoto} activeOpacity={0.8}>
-          {fotoUri ? (
-            <Image source={{ uri: fotoUri }} style={styles.fotoPreview} />
+        <Text style={styles.sectionTitle}>Assinatura do Responsável Técnico</Text>
+        <Text style={styles.sectionHint}>
+          Selecione uma imagem da assinatura (proporção 5:2 · ex: 500×200 px). Ela aparecerá acima da linha de assinatura no certificado.
+        </Text>
+
+        <TouchableOpacity style={styles.assinaturaPicker} onPress={pickAssinatura} activeOpacity={0.8}>
+          {assinaturaUri ? (
+            <Image source={{ uri: assinaturaUri }} style={styles.assinaturaPreview} resizeMode="contain" />
           ) : (
-            <View style={styles.fotoEmpty}>
-              <Ionicons name="person-circle-outline" size={40} color={Colors.gray[400]} />
-              <Text style={styles.fotoEmptyText}>Toque para selecionar</Text>
+            <View style={styles.assinaturaEmpty}>
+              <Ionicons name="create-outline" size={32} color={Colors.gray[400]} />
+              <Text style={styles.assinaturaEmptyText}>Toque para selecionar a assinatura</Text>
             </View>
           )}
         </TouchableOpacity>
-        {fotoUri && (
-          <TouchableOpacity onPress={() => setFotoUri(undefined)} style={styles.removeFotoBtn}>
+
+        {assinaturaUri && (
+          <TouchableOpacity onPress={() => setAssinaturaUri(undefined)} style={styles.removeBtn}>
             <Ionicons name="close-circle" size={18} color={Colors.danger} />
-            <Text style={styles.removeFotoText}>Remover foto</Text>
+            <Text style={styles.removeText}>Remover assinatura</Text>
           </TouchableOpacity>
         )}
 
-        <Text style={styles.sectionTitle}>Dados do Responsável</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Dados do Responsável</Text>
 
         <Controller
           control={control}
@@ -200,19 +205,23 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
   sectionTitle: {
     fontSize: 13, fontWeight: '700', color: Colors.gray[700],
-    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12, marginTop: 4,
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6, marginTop: 4,
   },
-  fotoPicker: {
-    width: 100, height: 100, borderRadius: 50,
+  sectionHint: {
+    fontSize: 12, color: Colors.gray[500], marginBottom: 12, lineHeight: 17,
+  },
+  assinaturaPicker: {
+    width: '100%',
+    aspectRatio: 5 / 2,
     borderWidth: 2, borderColor: Colors.border, borderStyle: 'dashed',
-    overflow: 'hidden', marginBottom: 8, alignSelf: 'center',
+    borderRadius: 8, overflow: 'hidden', backgroundColor: Colors.white,
   },
-  fotoPreview: { width: '100%', height: '100%', resizeMode: 'cover' },
-  fotoEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
-  fotoEmptyText: { fontSize: 11, color: Colors.gray[400], textAlign: 'center' },
-  removeFotoBtn: {
-    flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 4, marginBottom: 16,
+  assinaturaPreview: { width: '100%', height: '100%' },
+  assinaturaEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  assinaturaEmptyText: { fontSize: 13, color: Colors.gray[400], textAlign: 'center' },
+  removeBtn: {
+    flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 4, marginTop: 8,
   },
-  removeFotoText: { fontSize: 13, color: Colors.danger },
+  removeText: { fontSize: 13, color: Colors.danger },
   submitBtn: { marginTop: 8 },
 });

@@ -36,7 +36,7 @@ export function initDatabase(): void {
       nomeCompleto TEXT NOT NULL,
       funcao TEXT NOT NULL,
       registroDSST TEXT NOT NULL,
-      fotoUri TEXT,
+      assinaturaUri TEXT,
       createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -85,6 +85,7 @@ export function initDatabase(): void {
   try { db.execSync(`ALTER TABLE companies ADD COLUMN nomeFantasia TEXT NOT NULL DEFAULT ''`); } catch {}
   try { db.execSync(`ALTER TABLE courses ADD COLUMN codigo TEXT NOT NULL DEFAULT ''`); } catch {}
   try { db.execSync(`ALTER TABLE technicians ADD COLUMN fotoUri TEXT`); } catch {}
+  try { db.execSync(`ALTER TABLE technicians ADD COLUMN assinaturaUri TEXT`); } catch {}
 }
 
 // ─── Companies ──────────────────────────────────────────────────────────────
@@ -169,16 +170,16 @@ export function getTechnicianById(id: number): Technician | null {
 
 export function insertTechnician(data: Omit<Technician, 'id' | 'createdAt'>): number {
   const result = db.runSync(
-    `INSERT INTO technicians (nomeCompleto, funcao, registroDSST, fotoUri) VALUES (?, ?, ?, ?)`,
-    [data.nomeCompleto, data.funcao, data.registroDSST, data.fotoUri ?? null]
+    `INSERT INTO technicians (nomeCompleto, funcao, registroDSST, assinaturaUri) VALUES (?, ?, ?, ?)`,
+    [data.nomeCompleto, data.funcao, data.registroDSST, data.assinaturaUri ?? null]
   );
   return result.lastInsertRowId;
 }
 
 export function updateTechnician(id: number, data: Omit<Technician, 'id' | 'createdAt'>): void {
   db.runSync(
-    `UPDATE technicians SET nomeCompleto=?, funcao=?, registroDSST=?, fotoUri=? WHERE id=?`,
-    [data.nomeCompleto, data.funcao, data.registroDSST, data.fotoUri ?? null, id]
+    `UPDATE technicians SET nomeCompleto=?, funcao=?, registroDSST=?, assinaturaUri=? WHERE id=?`,
+    [data.nomeCompleto, data.funcao, data.registroDSST, data.assinaturaUri ?? null, id]
   );
 }
 
@@ -251,7 +252,7 @@ export function getAllCertificates(): Certificate[] {
       co.endereco as 'company.endereco', co.cidade as 'company.cidade', co.estado as 'company.estado',
       e.nomeCompleto as 'employee.nomeCompleto', e.funcao as 'employee.funcao', e.cpf as 'employee.cpf',
       t.nomeCompleto as 'technician.nomeCompleto', t.funcao as 'technician.funcao',
-      t.registroDSST as 'technician.registroDSST', t.fotoUri as 'technician.fotoUri',
+      t.registroDSST as 'technician.registroDSST', t.assinaturaUri as 'technician.assinaturaUri',
       cu.nome as 'course.nome', cu.codigo as 'course.codigo',
       cu.duracaoHoras as 'course.duracaoHoras', cu.validadeAnos as 'course.validadeAnos'
      FROM certificates ce
@@ -272,7 +273,7 @@ export function getCertificateById(id: number): Certificate | null {
       co.endereco as 'company.endereco', co.cidade as 'company.cidade', co.estado as 'company.estado',
       e.nomeCompleto as 'employee.nomeCompleto', e.funcao as 'employee.funcao', e.cpf as 'employee.cpf',
       t.nomeCompleto as 'technician.nomeCompleto', t.funcao as 'technician.funcao',
-      t.registroDSST as 'technician.registroDSST', t.fotoUri as 'technician.fotoUri',
+      t.registroDSST as 'technician.registroDSST', t.assinaturaUri as 'technician.assinaturaUri',
       cu.nome as 'course.nome', cu.codigo as 'course.codigo',
       cu.duracaoHoras as 'course.duracaoHoras', cu.validadeAnos as 'course.validadeAnos'
      FROM certificates ce
