@@ -578,6 +578,36 @@ function generateBatchCertificateHtml(
   return wrapHtml(pages);
 }
 
+// ── Filename helpers ──────────────────────────────────────────────────────────
+
+function toSlug(str: string, maxLen = 15): string {
+  return str
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')  // remove accents
+    .replace(/[^a-zA-Z0-9]/g, '')     // keep only alphanumeric
+    .substring(0, maxLen);
+}
+
+function buildFilename(cert: Certificate, batch?: { date: string; count: number }): string {
+  const courseSlug = cert.course?.codigo
+    ? toSlug(cert.course.codigo, 12)
+    : toSlug(cert.course?.nome ?? 'Curso', 12);
+
+  const companySlug = cert.company?.nomeFantasia
+    ? toSlug(cert.company.nomeFantasia, 15)
+    : toSlug(cert.company?.razaoSocial ?? 'Empresa', 15);
+
+  if (batch) {
+    return `TRA_${courseSlug}_${companySlug}_Turma${batch.date}_${batch.count}cert.pdf`;
+  }
+
+  const firstName = toSlug(
+    (cert.employee?.nomeCompleto ?? 'Funcionario').split(' ')[0],
+    12
+  );
+  return `TRA_${courseSlug}_${companySlug}_${firstName}.pdf`;
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export async function generateAndSharePdf(cert: Certificate): Promise<string> {
@@ -589,7 +619,7 @@ export async function generateAndSharePdf(cert: Certificate): Promise<string> {
   const html = generateCertificateHtml(cert, trasemeLogo, companyLogo || undefined);
   const { uri } = await Print.printToFileAsync({ html, base64: false });
 
-  const fileName = `Certificado_${cert.numeroUnico.replace(/\//g, '-')}.pdf`;
+  const fileName = buildFilename(cert);
   const destUri = FileSystem.documentDirectory + fileName;
   await FileSystem.copyAsync({ from: uri, to: destUri });
 
@@ -617,8 +647,8 @@ export async function generateBatchAndSharePdf(certs: Certificate[]): Promise<vo
   const html = generateBatchCertificateHtml(certs, trasemeLogo, companyLogo || undefined);
   const { uri } = await Print.printToFileAsync({ html, base64: false });
 
-  const timestamp = format(new Date(), 'yyyyMMdd-HHmm');
-  const fileName = `Turma_${timestamp}_${certs.length}certificados.pdf`;
+  const date = format(new Date(), 'yyyyMMdd');
+  const fileName = buildFilename(certs[0], { date, count: certs.length });
   const destUri = FileSystem.documentDirectory + fileName;
   await FileSystem.copyAsync({ from: uri, to: destUri });
 

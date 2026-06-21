@@ -26,6 +26,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'CourseForm'>;
 
 const schema = z.object({
+  codigo: z.string().optional(),
   nome: z.string().min(2, 'Nome do curso obrigatório'),
   duracaoHoras: z.string().min(1, 'Duração obrigatória'),
   validadeAnos: z.string().min(1, 'Validade obrigatória'),
@@ -50,7 +51,7 @@ export function CourseFormScreen() {
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: '', duracaoHoras: '', validadeAnos: '1' },
+    defaultValues: { codigo: '', nome: '', duracaoHoras: '', validadeAnos: '1' },
   });
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export function CourseFormScreen() {
       const course = getCourseById(courseId);
       if (course) {
         reset({
+          codigo: course.codigo ?? '',
           nome: course.nome,
           duracaoHoras: String(course.duracaoHoras),
           validadeAnos: String(course.validadeAnos),
@@ -101,6 +103,7 @@ export function CourseFormScreen() {
     setSaving(true);
     try {
       const payload = {
+        codigo: data.codigo ?? '',
         nome: data.nome,
         duracaoHoras: parseInt(data.duracaoHoras, 10),
         validadeAnos: parseInt(data.validadeAnos, 10),
@@ -130,6 +133,20 @@ export function CourseFormScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.sectionTitle}>Dados do Curso</Text>
+
+        <Controller
+          control={control}
+          name="codigo"
+          render={({ field: { onChange, value } }) => (
+            <Input
+              label="Código"
+              value={value}
+              onChangeText={onChange}
+              placeholder="Ex: NR35, CURSO01 (usado no nome do PDF)"
+              autoCapitalize="characters"
+            />
+          )}
+        />
 
         <Controller
           control={control}

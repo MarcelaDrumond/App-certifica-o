@@ -11,6 +11,7 @@ export function initDatabase(): void {
     CREATE TABLE IF NOT EXISTS companies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       razaoSocial TEXT NOT NULL,
+      nomeFantasia TEXT NOT NULL DEFAULT '',
       cnpj TEXT NOT NULL UNIQUE,
       endereco TEXT NOT NULL DEFAULT '',
       cidade TEXT NOT NULL DEFAULT '',
@@ -41,6 +42,7 @@ export function initDatabase(): void {
     CREATE TABLE IF NOT EXISTS courses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
+      codigo TEXT NOT NULL DEFAULT '',
       duracaoHoras INTEGER NOT NULL,
       validadeAnos INTEGER NOT NULL DEFAULT 1,
       createdAt TEXT NOT NULL DEFAULT (datetime('now'))
@@ -77,6 +79,10 @@ export function initDatabase(): void {
       FOREIGN KEY (technicianId) REFERENCES technicians(id)
     );
   `);
+
+  // Migrations for existing databases
+  try { db.execSync(`ALTER TABLE companies ADD COLUMN nomeFantasia TEXT NOT NULL DEFAULT ''`); } catch {}
+  try { db.execSync(`ALTER TABLE courses ADD COLUMN codigo TEXT NOT NULL DEFAULT ''`); } catch {}
 }
 
 // ─── Companies ──────────────────────────────────────────────────────────────
@@ -91,16 +97,16 @@ export function getCompanyById(id: number): Company | null {
 
 export function insertCompany(data: Omit<Company, 'id' | 'createdAt'>): number {
   const result = db.runSync(
-    `INSERT INTO companies (razaoSocial, cnpj, endereco, cidade, estado, cep, logoUri) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [data.razaoSocial, data.cnpj, data.endereco, data.cidade, data.estado, data.cep, data.logoUri ?? null]
+    `INSERT INTO companies (razaoSocial, nomeFantasia, cnpj, endereco, cidade, estado, cep, logoUri) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [data.razaoSocial, data.nomeFantasia ?? '', data.cnpj, data.endereco, data.cidade, data.estado, data.cep, data.logoUri ?? null]
   );
   return result.lastInsertRowId;
 }
 
 export function updateCompany(id: number, data: Omit<Company, 'id' | 'createdAt'>): void {
   db.runSync(
-    `UPDATE companies SET razaoSocial=?, cnpj=?, endereco=?, cidade=?, estado=?, cep=?, logoUri=? WHERE id=?`,
-    [data.razaoSocial, data.cnpj, data.endereco, data.cidade, data.estado, data.cep, data.logoUri ?? null, id]
+    `UPDATE companies SET razaoSocial=?, nomeFantasia=?, cnpj=?, endereco=?, cidade=?, estado=?, cep=?, logoUri=? WHERE id=?`,
+    [data.razaoSocial, data.nomeFantasia ?? '', data.cnpj, data.endereco, data.cidade, data.estado, data.cep, data.logoUri ?? null, id]
   );
 }
 
@@ -203,8 +209,8 @@ export function getCourseTopics(courseId: number): CourseTopic[] {
 
 export function insertCourse(data: Omit<Course, 'id' | 'createdAt'>): number {
   const result = db.runSync(
-    `INSERT INTO courses (nome, duracaoHoras, validadeAnos) VALUES (?, ?, ?)`,
-    [data.nome, data.duracaoHoras, data.validadeAnos]
+    `INSERT INTO courses (nome, codigo, duracaoHoras, validadeAnos) VALUES (?, ?, ?, ?)`,
+    [data.nome, data.codigo ?? '', data.duracaoHoras, data.validadeAnos]
   );
   const courseId = result.lastInsertRowId;
   insertCourseTopics(courseId, data.topicos);
@@ -223,8 +229,8 @@ export function insertCourseTopics(courseId: number, topicos: CourseTopic[]): vo
 
 export function updateCourse(id: number, data: Omit<Course, 'id' | 'createdAt'>): void {
   db.runSync(
-    `UPDATE courses SET nome=?, duracaoHoras=?, validadeAnos=? WHERE id=?`,
-    [data.nome, data.duracaoHoras, data.validadeAnos, id]
+    `UPDATE courses SET nome=?, codigo=?, duracaoHoras=?, validadeAnos=? WHERE id=?`,
+    [data.nome, data.codigo ?? '', data.duracaoHoras, data.validadeAnos, id]
   );
   insertCourseTopics(id, data.topicos);
 }

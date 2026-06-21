@@ -1,6 +1,7 @@
 export interface Company {
   id: number;
   razaoSocial: string;
+  nomeFantasia?: string;
   cnpj: string;
   endereco: string;
   cidade: string;
@@ -38,6 +39,7 @@ export interface CourseTopic {
 export interface Course {
   id: number;
   nome: string;
+  codigo?: string;
   duracaoHoras: number;
   validadeAnos: number;
   topicos: CourseTopic[];

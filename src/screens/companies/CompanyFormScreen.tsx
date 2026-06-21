@@ -33,6 +33,7 @@ type Route = RouteProp<RootStackParamList, 'CompanyForm'>;
 
 const schema = z.object({
   razaoSocial: z.string().min(2, 'Razão social obrigatória'),
+  nomeFantasia: z.string().optional(),
   cnpj: z.string().min(18, 'CNPJ inválido'),
   endereco: z.string().min(1, 'Endereço obrigatório'),
   cidade: z.string().min(1, 'Cidade obrigatória'),
@@ -60,6 +61,7 @@ export function CompanyFormScreen() {
     resolver: zodResolver(schema),
     defaultValues: {
       razaoSocial: '',
+      nomeFantasia: '',
       cnpj: '',
       endereco: '',
       cidade: '',
@@ -74,6 +76,7 @@ export function CompanyFormScreen() {
       if (company) {
         reset({
           razaoSocial: company.razaoSocial,
+          nomeFantasia: company.nomeFantasia ?? '',
           cnpj: company.cnpj,
           endereco: company.endereco,
           cidade: company.cidade,
@@ -111,9 +114,9 @@ export function CompanyFormScreen() {
     setSaving(true);
     try {
       if (isEditing && companyId) {
-        updateCompany(companyId, { ...data, logoUri });
+        updateCompany(companyId, { ...data, nomeFantasia: data.nomeFantasia ?? '', logoUri });
       } else {
-        insertCompany({ ...data, logoUri });
+        insertCompany({ ...data, nomeFantasia: data.nomeFantasia ?? '', logoUri });
       }
       navigation.goBack();
     } catch (e: any) {
@@ -163,6 +166,20 @@ export function CompanyFormScreen() {
               onChangeText={onChange}
               placeholder="Nome completo da empresa"
               error={errors.razaoSocial?.message}
+              autoCapitalize="words"
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="nomeFantasia"
+          render={({ field: { onChange, value } }) => (
+            <Input
+              label="Nome Fantasia"
+              value={value}
+              onChangeText={onChange}
+              placeholder="Nome curto usado nos arquivos PDF"
               autoCapitalize="words"
             />
           )}
