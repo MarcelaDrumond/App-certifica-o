@@ -1,26 +1,16 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
 import { Certificate } from '../types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { TRASEME_LOGO_BASE64 } from './logoBase64';
 
 const TRASEME_NAME = 'TRASEME MEDICINA E SEGURANÇA DO TRABALHO LTDA';
 const TRASEME_CNPJ = '34.046.480/0001-43';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const TRASEME_LOGO_MODULE = require('../../assets/traseme-logo.png');
-
 async function getLogoBase64(): Promise<string> {
-  const asset = Asset.fromModule(TRASEME_LOGO_MODULE);
-  await asset.downloadAsync();
-  const localUri = asset.localUri;
-  if (!localUri) return '';
-  const base64 = await FileSystem.readAsStringAsync(localUri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-  return `data:image/png;base64,${base64}`;
+  return TRASEME_LOGO_BASE64;
 }
 
 export async function getCompanyLogoBase64(uri: string): Promise<string> {
