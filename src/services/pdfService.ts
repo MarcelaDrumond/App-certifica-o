@@ -60,8 +60,6 @@ function generateCertificateHtml(
   const techDSST = cert.technician?.registroDSST ?? '';
   const techFuncao = cert.technician?.funcao ?? '';
   const companyName = cert.company?.razaoSocial ?? '';
-  const companyCNPJ = cert.company?.cnpj ?? '';
-  const certNumber = cert.numeroUnico;
 
   const trasemeLogoHtml = trasemeLogoBase64
     ? `<img src="${trasemeLogoBase64}" style="height:68px;width:auto;object-fit:contain;display:block;" alt="Traseme" />`
@@ -152,7 +150,7 @@ function generateCertificateHtml(
   .header-logos {
     display: flex;
     align-items: center;
-    gap: 18px;
+    justify-content: space-between;
     flex: 1;
   }
 
@@ -613,17 +611,7 @@ function generateCertificateHtml(
     <div class="header">
       <div class="header-logos">
         ${trasemeLogoHtml}
-        <div class="logo-separator"></div>
-        <div class="issuer-block">
-          <div class="issuer-name">${TRASEME_NAME}</div>
-          <div class="issuer-cnpj">CNPJ: ${TRASEME_CNPJ}</div>
-        </div>
-        <div class="logo-separator"></div>
         <div class="company-logo-cell">${companyLogoHtml}</div>
-      </div>
-      <div class="header-right">
-        <div class="cert-n-label">Certificado Nº</div>
-        <div class="cert-n-value">${certNumber}</div>
       </div>
     </div>
 
@@ -660,14 +648,6 @@ function generateCertificateHtml(
         </div>
       </div>
 
-      <div class="company-block">
-        <div class="company-text">
-          <div class="company-lbl">Empresa</div>
-          <div class="company-name">${companyName}</div>
-          <div class="company-cnpj">CNPJ: ${companyCNPJ}</div>
-        </div>
-      </div>
-
       <div class="location-date">${localDate}</div>
     </div>
 
@@ -697,7 +677,6 @@ function generateCertificateHtml(
       </div>
       <div class="footer-center">
         <div class="footer-auth">Documento autêntico — verifique a autenticidade</div>
-        <div class="footer-num">${certNumber}</div>
       </div>
       ${trasemeLogoBase64 ? `<img src="${trasemeLogoBase64}" style="height:40px;width:auto;object-fit:contain;opacity:0.35;" alt="" />` : ''}
     </div>
@@ -723,7 +702,7 @@ function generateCertificateHtml(
       <div class="page2-heading">
         <div class="page2-title">Conteúdo Programático</div>
         <div class="page2-sub">
-          ${courseName} &nbsp;·&nbsp; ${duracaoHoras} horas &nbsp;·&nbsp; Certificado Nº ${certNumber}
+          ${courseName} &nbsp;·&nbsp; ${duracaoHoras} horas
         </div>
       </div>
     </div>
@@ -741,12 +720,6 @@ function generateCertificateHtml(
     </table>
 
     <div class="page2-footer">
-      <div class="page2-footer-left">
-        <div class="page2-footer-issuer">
-          ${TRASEME_NAME}<br/>
-          CNPJ: ${TRASEME_CNPJ}
-        </div>
-      </div>
       <div class="validity-badge">
         <div class="validity-lbl">Válido até</div>
         <div class="validity-date">${formatDateBR(cert.dataValidade)}</div>

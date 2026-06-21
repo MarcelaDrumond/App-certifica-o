@@ -20,6 +20,7 @@ import { TechnicianFormScreen } from '../screens/technicians/TechnicianFormScree
 import { CertificatesScreen } from '../screens/certificates/CertificatesScreen';
 import { CertificateIssueScreen } from '../screens/certificates/CertificateIssueScreen';
 import { CertificatePreviewScreen } from '../screens/certificates/CertificatePreviewScreen';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -43,6 +44,7 @@ function MainTabs() {
             Courses: ['book', 'book-outline'],
             Certificates: ['ribbon', 'ribbon-outline'],
             Technicians: ['people', 'people-outline'],
+            Settings: ['settings', 'settings-outline'],
           };
           const [filled, outline] = icons[route.name] ?? ['help-circle', 'help-circle-outline'];
           return (
@@ -84,6 +86,11 @@ function MainTabs() {
         name="Technicians"
         component={TechniciansScreen}
         options={{ title: 'Resp. Técnicos' }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'Dados' }}
       />
     </Tab.Navigator>
   );

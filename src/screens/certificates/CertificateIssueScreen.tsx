@@ -31,7 +31,13 @@ import {
   getAllCourses,
   getAllTechnicians,
   insertCertificate,
-  getCertificateById,
+  saveSetting,
+  getSetting,
+  deleteSetting,
+  getCompanyById,
+  getEmployeeById,
+  getCourseById,
+  getTechnicianById,
 } from '../../database/database';
 import { generateCertificateNumber } from '../../services/pdfService';
 import { Colors } from '../../theme/colors';
@@ -65,6 +71,8 @@ export function CertificateIssueScreen() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [saving, setSaving] = useState(false);
 
+  const DRAFT_KEY = 'cert_issue_draft';
+
   const {
     control,
     handleSubmit,
@@ -78,18 +86,57 @@ export function CertificateIssueScreen() {
   });
 
   useEffect(() => {
-    setCompanies(getAllCompanies());
-    setCourses(getAllCourses());
-    setTechnicians(getAllTechnicians());
+    const allCompanies = getAllCompanies();
+    const allCourses = getAllCourses();
+    const allTechnicians = getAllTechnicians();
+    setCompanies(allCompanies);
+    setCourses(allCourses);
+    setTechnicians(allTechnicians);
+
+    // Restore auto-saved draft
+    const raw = getSetting(DRAFT_KEY);
+    if (raw) {
+      try {
+        const draft = JSON.parse(raw);
+        if (draft.companyId) {
+          const co = getCompanyById(draft.companyId);
+          if (co) {
+            setSelectedCompany(co);
+            if (draft.employeeId) {
+              const emp = getEmployeeById(draft.employeeId);
+              if (emp) setSelectedEmployee(emp);
+            }
+          }
+        }
+        if (draft.courseId) {
+          const co = getCourseById(draft.courseId);
+          if (co) setSelectedCourse(co);
+        }
+        if (draft.technicianId) {
+          const t = getTechnicianById(draft.technicianId);
+          if (t) setSelectedTechnician(t);
+        }
+      } catch { /* ignore corrupt draft */ }
+    }
   }, []);
 
   useEffect(() => {
     if (selectedCompany) {
       const emps = getEmployeesByCompany(selectedCompany.id);
       setEmployees(emps);
-      setSelectedEmployee(null);
     }
   }, [selectedCompany]);
+
+  // Auto-save draft whenever selections change
+  useEffect(() => {
+    const draft = {
+      companyId: selectedCompany?.id,
+      employeeId: selectedEmployee?.id,
+      courseId: selectedCourse?.id,
+      technicianId: selectedTechnician?.id,
+    };
+    saveSetting(DRAFT_KEY, JSON.stringify(draft));
+  }, [selectedCompany, selectedEmployee, selectedCourse, selectedTechnician]);
 
   const parseDateBR = (dateStr: string): string => {
     const [d, m, y] = dateStr.split('/');
@@ -132,6 +179,7 @@ export function CertificateIssueScreen() {
         dataValidade,
       });
 
+      deleteSetting(DRAFT_KEY);
       navigation.replace('CertificatePreview', { certificateId: certId });
     } catch (e: any) {
       Alert.alert('Erro', e?.message ?? 'Não foi possível emitir o certificado.');

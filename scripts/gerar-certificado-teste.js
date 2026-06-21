@@ -72,7 +72,7 @@ function buildHtml() {
 
   /* ── HEADER ── */
   .header{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:2.5px solid #1B5E20;margin-bottom:14px;gap:16px;}
-  .header-logos{display:flex;align-items:center;gap:18px;flex:1;}
+  .header-logos{display:flex;align-items:center;justify-content:space-between;flex:1;}
   .logo-sep{width:1px;height:56px;background:#E0E0E0;flex-shrink:0;}
   .issuer{display:flex;flex-direction:column;gap:3px;flex:1;}
   .issuer-name{font-size:9.5px;font-weight:700;color:#1B5E20;text-transform:uppercase;letter-spacing:.3px;line-height:1.4;}
@@ -157,17 +157,7 @@ function buildHtml() {
     <div class="header">
       <div class="header-logos">
         <img src="${logoBase64}" style="height:68px;width:auto;object-fit:contain;" alt="Traseme"/>
-        <div class="logo-sep"></div>
-        <div class="issuer">
-          <div class="issuer-name">TRASEME MEDICINA E SEGURANÇA DO TRABALHO LTDA</div>
-          <div class="issuer-cnpj">CNPJ: 34.046.480/0001-43</div>
-        </div>
-        <div class="logo-sep"></div>
-        <div style="font-size:13px;font-weight:700;color:#1B5E20;max-width:130px;line-height:1.3;">${cert.company.razaoSocial}</div>
-      </div>
-      <div class="cert-num">
-        <div class="cert-num-lbl">Certificado Nº</div>
-        <div class="cert-num-val">${cert.numeroUnico}</div>
+        <div style="height:60px;width:60px;background:#E8F5E9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:22px;font-weight:800;">${cert.company.razaoSocial.charAt(0)}</div>
       </div>
     </div>
 
@@ -190,12 +180,6 @@ function buildHtml() {
           <div class="meta-col"><span class="meta-lbl">Carga Horária</span><span class="meta-val">${cert.course.duracaoHoras}h</span></div>
           <div class="meta-col"><span class="meta-lbl">Válido até</span><span class="meta-val">${fmtDate(cert.dataValidade)}</span></div>
         </div>
-      </div>
-
-      <div class="company-block">
-        <div class="company-lbl">Empresa</div>
-        <div class="company-name">${cert.company.razaoSocial}</div>
-        <div class="company-cnpj">CNPJ: ${cert.company.cnpj}</div>
       </div>
 
       <div class="loc-date">${cert.localRealizacao}, ${fmtDate(cert.dataRealizacao)}</div>
@@ -223,7 +207,6 @@ function buildHtml() {
       <div class="seal"><div class="seal-text">TRASEME<br/>CERTIFICA<br/>✦</div></div>
       <div class="footer-center">
         <div class="footer-auth">Documento autêntico — verifique a autenticidade</div>
-        <div class="footer-num">${cert.numeroUnico}</div>
       </div>
       <img src="${logoBase64}" class="footer-logo" alt=""/>
     </div>
@@ -242,7 +225,7 @@ function buildHtml() {
       <img src="${logoBase64}" style="height:56px;width:auto;object-fit:contain;flex-shrink:0;" alt="Traseme"/>
       <div class="p2-heading">
         <div class="p2-title">Conteúdo Programático</div>
-        <div class="p2-sub">${cert.course.nome} &nbsp;·&nbsp; ${cert.course.duracaoHoras} horas &nbsp;·&nbsp; Certificado Nº ${cert.numeroUnico}</div>
+        <div class="p2-sub">${cert.course.nome} &nbsp;·&nbsp; ${cert.course.duracaoHoras} horas</div>
       </div>
     </div>
 
@@ -252,10 +235,6 @@ function buildHtml() {
     </table>
 
     <div class="p2-footer">
-      <div class="p2-footer-issuer">
-        TRASEME MEDICINA E SEGURANÇA DO TRABALHO LTDA<br/>
-        CNPJ: 34.046.480/0001-43
-      </div>
       <div class="validity-badge">
         <div class="validity-lbl">Válido até</div>
         <div class="validity-date">${fmtDate(cert.dataValidade)}</div>

@@ -82,4 +82,5 @@ export type TabParamList = {
   Courses: undefined;
   Certificates: undefined;
   Technicians: undefined;
+  Settings: undefined;
 };

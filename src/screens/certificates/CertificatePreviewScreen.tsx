@@ -116,13 +116,14 @@ export function CertificatePreviewScreen() {
 
         {/* Header */}
         <View style={styles.certHeader}>
-          <View style={styles.certHeaderLeft}>
-            <Image source={TRASEME_LOGO} style={styles.trasemeLogoImg} resizeMode="contain" />
-          </View>
-          <View style={styles.certHeaderRight}>
-            <Text style={styles.certNumLabel}>Nº</Text>
-            <Text style={styles.certNumValue}>{certificate.numeroUnico}</Text>
-          </View>
+          <Image source={TRASEME_LOGO} style={styles.trasemeLogoImg} resizeMode="contain" />
+          {certificate.company?.logoUri ? (
+            <Image source={{ uri: certificate.company.logoUri }} style={styles.companyLogoImg} resizeMode="contain" />
+          ) : (
+            <View style={styles.companyLogoPlaceholder}>
+              <Text style={styles.companyLogoLetter}>{certificate.company?.razaoSocial?.charAt(0) ?? '?'}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.certDivider} />
@@ -152,13 +153,6 @@ export function CertificatePreviewScreen() {
               <Text style={styles.metaBadgeText}>Val. {formatDateBR(certificate.dataValidade)}</Text>
             </View>
           </View>
-        </View>
-
-        {/* Company */}
-        <View style={styles.companyBlock}>
-          <Text style={styles.companyLabel}>Empresa</Text>
-          <Text style={styles.companyName}>{certificate.company?.razaoSocial}</Text>
-          <Text style={styles.companyCNPJ}>{certificate.company?.cnpj}</Text>
         </View>
 
         {/* Location */}
@@ -277,11 +271,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     padding: 16, paddingBottom: 14,
   },
-  certHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
   trasemeLogoImg: { height: 52, width: 160 },
-  certHeaderRight: { alignItems: 'flex-end' },
-  certNumLabel: { fontSize: 10, color: Colors.gray[400], textTransform: 'uppercase', letterSpacing: 1 },
-  certNumValue: { fontSize: 12, fontWeight: '700', color: Colors.primary.dark, fontFamily: 'monospace' },
+  companyLogoImg: { height: 52, width: 120, resizeMode: 'contain' },
+  companyLogoPlaceholder: {
+    width: 52, height: 52, borderRadius: 8,
+    backgroundColor: Colors.primary.pale,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  companyLogoLetter: { fontSize: 24, fontWeight: '800', color: Colors.primary.main },
 
   certDivider: { height: 1.5, backgroundColor: Colors.primary.dark, marginHorizontal: 16 },
 
@@ -320,14 +317,6 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border,
   },
   metaBadgeText: { fontSize: 12, fontWeight: '600', color: Colors.gray[700] },
-
-  companyBlock: {
-    backgroundColor: Colors.gray[50], borderRadius: 6, borderWidth: 1, borderColor: Colors.border,
-    marginHorizontal: 16, padding: 12, marginBottom: 14,
-  },
-  companyLabel: { fontSize: 11, color: Colors.gray[400], textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
-  companyName: { fontSize: 14, fontWeight: '700', color: Colors.gray[900] },
-  companyCNPJ: { fontSize: 12, color: Colors.gray[500], fontFamily: 'monospace' },
 
   location: { fontSize: 13, color: Colors.gray[500], textAlign: 'center', fontStyle: 'italic', marginBottom: 4 },
 

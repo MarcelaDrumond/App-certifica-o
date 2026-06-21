@@ -54,6 +54,11 @@ export function initDatabase(): void {
       FOREIGN KEY (courseId) REFERENCES courses(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS certificates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       numeroUnico TEXT NOT NULL UNIQUE,
@@ -304,4 +309,124 @@ export function updateCertificatePdf(id: number, pdfUri: string): void {
 
 export function deleteCertificate(id: number): void {
   db.runSync('DELETE FROM certificates WHERE id = ?', [id]);
+}
+
+// ─── App Settings (auto-save drafts) ─────────────────────────────────────────
+
+export function saveSetting(key: string, value: string): void {
+  db.runSync('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)', [key, value]);
+}
+
+export function getSetting(key: string): string | null {
+  const row = db.getFirstSync<{ value: string }>('SELECT value FROM app_settings WHERE key = ?', [key]);
+  return row?.value ?? null;
+}
+
+export function deleteSetting(key: string): void {
+  db.runSync('DELETE FROM app_settings WHERE key = ?', [key]);
+}
+
+// ─── Export / Import ──────────────────────────────────────────────────────────
+
+export interface BackupData {
+  version: number;
+  exportedAt: string;
+  companies: Company[];
+  employees: Employee[];
+  technicians: Technician[];
+  courses: Course[];
+  certificates: Array<Omit<Certificate, 'company' | 'employee' | 'course' | 'technician'>>;
+}
+
+export function exportAllData(): string {
+  const companies = db.getAllSync<Company>('SELECT * FROM companies ORDER BY id ASC');
+  const employees = db.getAllSync<Employee>('SELECT * FROM employees ORDER BY id ASC');
+  const technicians = db.getAllSync<Technician>('SELECT * FROM technicians ORDER BY id ASC');
+  const rawCourses = db.getAllSync<Omit<Course, 'topicos'>>('SELECT * FROM courses ORDER BY id ASC');
+  const courses: Course[] = rawCourses.map((c) => ({ ...c, topicos: getCourseTopics(c.id) }));
+  const certificates = db.getAllSync<Omit<Certificate, 'company' | 'employee' | 'course' | 'technician'>>(
+    'SELECT * FROM certificates ORDER BY id ASC'
+  );
+
+  const backup: BackupData = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    companies,
+    employees,
+    technicians,
+    courses,
+    certificates,
+  };
+  return JSON.stringify(backup, null, 2);
+}
+
+export function importAllData(json: string): { count: number; error?: string } {
+  let data: BackupData;
+  try {
+    data = JSON.parse(json) as BackupData;
+    if (!data.version || !data.companies) throw new Error('Arquivo inválido');
+  } catch (e: any) {
+    return { count: 0, error: e?.message ?? 'Formato inválido' };
+  }
+
+  db.execSync('PRAGMA foreign_keys = OFF;');
+  let count = 0;
+  try {
+    db.execSync(`
+      DELETE FROM certificates;
+      DELETE FROM course_topics;
+      DELETE FROM courses;
+      DELETE FROM employees;
+      DELETE FROM technicians;
+      DELETE FROM companies;
+    `);
+
+    for (const c of data.companies ?? []) {
+      db.runSync(
+        'INSERT INTO companies (id, razaoSocial, cnpj, endereco, cidade, estado, cep, logoUri, createdAt) VALUES (?,?,?,?,?,?,?,?,?)',
+        [c.id, c.razaoSocial, c.cnpj, c.endereco, c.cidade, c.estado, c.cep, c.logoUri ?? null, c.createdAt]
+      );
+      count++;
+    }
+    for (const e of data.employees ?? []) {
+      db.runSync(
+        'INSERT INTO employees (id, nomeCompleto, funcao, cpf, companyId, createdAt) VALUES (?,?,?,?,?,?)',
+        [e.id, e.nomeCompleto, e.funcao, e.cpf, e.companyId, e.createdAt]
+      );
+      count++;
+    }
+    for (const t of data.technicians ?? []) {
+      db.runSync(
+        'INSERT INTO technicians (id, nomeCompleto, funcao, registroDSST, createdAt) VALUES (?,?,?,?,?)',
+        [t.id, t.nomeCompleto, t.funcao, t.registroDSST, t.createdAt]
+      );
+      count++;
+    }
+    for (const c of data.courses ?? []) {
+      db.runSync(
+        'INSERT INTO courses (id, nome, duracaoHoras, validadeAnos, createdAt) VALUES (?,?,?,?,?)',
+        [c.id, c.nome, c.duracaoHoras, c.validadeAnos, c.createdAt]
+      );
+      for (const t of c.topicos ?? []) {
+        db.runSync(
+          'INSERT INTO course_topics (courseId, ordem, topico) VALUES (?,?,?)',
+          [c.id, t.ordem, t.topico]
+        );
+      }
+      count++;
+    }
+    for (const ce of data.certificates ?? []) {
+      db.runSync(
+        'INSERT INTO certificates (id, numeroUnico, companyId, employeeId, courseId, technicianId, localRealizacao, dataRealizacao, dataValidade, pdfUri, createdAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+        [ce.id, ce.numeroUnico, ce.companyId, ce.employeeId, ce.courseId, ce.technicianId, ce.localRealizacao, ce.dataRealizacao, ce.dataValidade, ce.pdfUri ?? null, ce.createdAt]
+      );
+      count++;
+    }
+  } catch (e: any) {
+    return { count: 0, error: e?.message ?? 'Erro ao importar' };
+  } finally {
+    db.execSync('PRAGMA foreign_keys = ON;');
+  }
+
+  return { count };
 }
