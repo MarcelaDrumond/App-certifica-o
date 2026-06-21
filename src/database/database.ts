@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import * as FileSystem from 'expo-file-system';
 import { Company, Employee, Technician, Course, CourseTopic, Certificate } from '../types';
 
 const db = SQLite.openDatabaseSync('traseme_certs.db');
@@ -346,14 +347,38 @@ export function deleteSetting(key: string): void {
 export interface BackupData {
   version: number;
   exportedAt: string;
-  companies: Company[];
+  companies: Array<Company & { logoBase64?: string }>;
   employees: Employee[];
-  technicians: Technician[];
+  technicians: Array<Technician & { assinaturaBase64?: string }>;
   courses: Course[];
   certificates: Array<Omit<Certificate, 'company' | 'employee' | 'course' | 'technician'>>;
 }
 
-export function exportAllData(): string {
+async function readImageAsBase64(uri: string): Promise<string | null> {
+  if (!uri) return null;
+  try {
+    const ext = uri.split('.').pop()?.toLowerCase() ?? 'png';
+    const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    return `data:${mime};base64,${base64}`;
+  } catch {
+    return null;
+  }
+}
+
+async function writeBase64ToFile(base64DataUri: string, filename: string): Promise<string | null> {
+  try {
+    const ext = base64DataUri.startsWith('data:image/jpeg') ? 'jpg' : 'png';
+    const destUri = FileSystem.documentDirectory + `${filename}.${ext}`;
+    const base64Data = base64DataUri.split(',')[1];
+    await FileSystem.writeAsStringAsync(destUri, base64Data, { encoding: FileSystem.EncodingType.Base64 });
+    return destUri;
+  } catch {
+    return null;
+  }
+}
+
+export async function exportAllData(): Promise<string> {
   const companies = db.getAllSync<Company>('SELECT * FROM companies ORDER BY id ASC');
   const employees = db.getAllSync<Employee>('SELECT * FROM employees ORDER BY id ASC');
   const technicians = db.getAllSync<Technician>('SELECT * FROM technicians ORDER BY id ASC');
@@ -363,19 +388,33 @@ export function exportAllData(): string {
     'SELECT * FROM certificates ORDER BY id ASC'
   );
 
+  const companiesWithImages = await Promise.all(
+    companies.map(async (c) => {
+      const logoBase64 = c.logoUri ? await readImageAsBase64(c.logoUri) : null;
+      return logoBase64 ? { ...c, logoBase64 } : c;
+    })
+  );
+
+  const techniciansWithImages = await Promise.all(
+    technicians.map(async (t) => {
+      const assinaturaBase64 = t.assinaturaUri ? await readImageAsBase64(t.assinaturaUri) : null;
+      return assinaturaBase64 ? { ...t, assinaturaBase64 } : t;
+    })
+  );
+
   const backup: BackupData = {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
-    companies,
+    companies: companiesWithImages,
     employees,
-    technicians,
+    technicians: techniciansWithImages,
     courses,
     certificates,
   };
   return JSON.stringify(backup, null, 2);
 }
 
-export function importAllData(json: string): { count: number; error?: string } {
+export async function importAllData(json: string): Promise<{ count: number; error?: string }> {
   let data: BackupData;
   try {
     data = JSON.parse(json) as BackupData;
@@ -383,6 +422,22 @@ export function importAllData(json: string): { count: number; error?: string } {
   } catch (e: any) {
     return { count: 0, error: e?.message ?? 'Formato inválido' };
   }
+
+  const companiesRestored = await Promise.all(
+    (data.companies ?? []).map(async (c: any) => {
+      if (!c.logoBase64) return { ...c, logoUri: null };
+      const logoUri = await writeBase64ToFile(c.logoBase64, `company_logo_${c.id}`);
+      return { ...c, logoUri };
+    })
+  );
+
+  const techniciansRestored = await Promise.all(
+    (data.technicians ?? []).map(async (t: any) => {
+      if (!t.assinaturaBase64) return t;
+      const assinaturaUri = await writeBase64ToFile(t.assinaturaBase64, `tech_assinatura_${t.id}`);
+      return { ...t, assinaturaUri };
+    })
+  );
 
   db.execSync('PRAGMA foreign_keys = OFF;');
   let count = 0;
@@ -396,10 +451,10 @@ export function importAllData(json: string): { count: number; error?: string } {
       DELETE FROM companies;
     `);
 
-    for (const c of data.companies ?? []) {
+    for (const c of companiesRestored) {
       db.runSync(
-        'INSERT INTO companies (id, razaoSocial, cnpj, endereco, cidade, estado, cep, logoUri, createdAt) VALUES (?,?,?,?,?,?,?,?,?)',
-        [c.id, c.razaoSocial, c.cnpj, c.endereco, c.cidade, c.estado, c.cep, c.logoUri ?? null, c.createdAt]
+        'INSERT INTO companies (id, razaoSocial, nomeFantasia, cnpj, endereco, cidade, estado, cep, logoUri, createdAt) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        [c.id, c.razaoSocial, c.nomeFantasia ?? '', c.cnpj, c.endereco ?? '', c.cidade ?? '', c.estado ?? '', c.cep ?? '', c.logoUri ?? null, c.createdAt]
       );
       count++;
     }
@@ -410,17 +465,17 @@ export function importAllData(json: string): { count: number; error?: string } {
       );
       count++;
     }
-    for (const t of data.technicians ?? []) {
+    for (const t of techniciansRestored) {
       db.runSync(
-        'INSERT INTO technicians (id, nomeCompleto, funcao, registroDSST, createdAt) VALUES (?,?,?,?,?)',
-        [t.id, t.nomeCompleto, t.funcao, t.registroDSST, t.createdAt]
+        'INSERT INTO technicians (id, nomeCompleto, funcao, registroDSST, assinaturaUri, createdAt) VALUES (?,?,?,?,?,?)',
+        [t.id, t.nomeCompleto, t.funcao, t.registroDSST, t.assinaturaUri ?? null, t.createdAt]
       );
       count++;
     }
     for (const c of data.courses ?? []) {
       db.runSync(
-        'INSERT INTO courses (id, nome, duracaoHoras, validadeAnos, createdAt) VALUES (?,?,?,?,?)',
-        [c.id, c.nome, c.duracaoHoras, c.validadeAnos, c.createdAt]
+        'INSERT INTO courses (id, nome, codigo, duracaoHoras, validadeAnos, createdAt) VALUES (?,?,?,?,?,?)',
+        [c.id, c.nome, c.codigo ?? '', c.duracaoHoras, c.validadeAnos, c.createdAt]
       );
       for (const t of c.topicos ?? []) {
         db.runSync(

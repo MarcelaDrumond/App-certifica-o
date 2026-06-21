@@ -24,7 +24,7 @@ export function SettingsScreen() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const json = exportAllData();
+      const json = await exportAllData();
       const fileName = `traseme_backup_${new Date().toISOString().slice(0, 10)}.json`;
       const fileUri = FileSystem.cacheDirectory + fileName;
       await FileSystem.writeAsStringAsync(fileUri, json, { encoding: FileSystem.EncodingType.UTF8 });
@@ -70,7 +70,7 @@ export function SettingsScreen() {
                 encoding: FileSystem.EncodingType.UTF8,
               });
 
-              const { count, error } = importAllData(json);
+              const { count, error } = await importAllData(json);
               if (error) {
                 Alert.alert('Erro ao importar', error);
               } else {
