@@ -32,6 +32,17 @@
         {
           "photosPermission": "O app precisa de acesso às fotos para adicionar logos das empresas."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24,
+            "kotlinVersion": "1.9.0"
+          }
+        }
       ]
     ]
   }
