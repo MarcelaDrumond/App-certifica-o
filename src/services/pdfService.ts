@@ -553,7 +553,7 @@ function generateCertificateHtml(
   technicianSignatureBase64?: string
 ): string {
   return wrapHtml(
-    `<div class="cert-page">${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64, technicianPhotoBase64)}</div>`
+    `<div class="cert-page">${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64, technicianSignatureBase64)}</div>`
   );
 }
 
@@ -567,7 +567,7 @@ function generateBatchCertificateHtml(
     .map((cert, i) => {
       const isLast = i === certs.length - 1;
       return `<div class="cert-page" style="${isLast ? '' : 'page-break-after:always;'}">
-  ${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64, technicianPhotoBase64)}
+  ${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64, technicianSignatureBase64)}
 </div>`;
     })
     .join('\n');
