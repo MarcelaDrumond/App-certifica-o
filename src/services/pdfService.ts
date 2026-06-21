@@ -381,8 +381,8 @@ function buildCertPageHtml(
     : `<div style="height:44px;width:110px;background:#1B5E20;border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:900;letter-spacing:1px;">TRASEME</div>`;
 
   const companyLogoHtml = companyLogoBase64
-    ? `<img src="${companyLogoBase64}" style="height:40px;width:auto;max-width:110px;object-fit:contain;display:block;" alt="${companyName}" />`
-    : `<div style="height:40px;width:40px;background:#E8F5E9;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:18px;font-weight:800;">${companyName.charAt(0)}</div>`;
+    ? `<img src="${companyLogoBase64}" style="height:44px;width:auto;max-width:180px;object-fit:contain;display:block;" alt="${companyName}" />`
+    : `<div style="height:44px;padding:0 8px;background:#E8F5E9;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:11px;font-weight:800;text-align:center;max-width:160px;">${companyName}</div>`;
 
   const topicosHtml = topicos
     .map(
