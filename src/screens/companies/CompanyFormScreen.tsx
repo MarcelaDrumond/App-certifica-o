@@ -35,10 +35,10 @@ const schema = z.object({
   razaoSocial: z.string().min(2, 'Razão social obrigatória'),
   nomeFantasia: z.string().optional(),
   cnpj: z.string().min(18, 'CNPJ inválido'),
-  endereco: z.string().min(1, 'Endereço obrigatório'),
-  cidade: z.string().min(1, 'Cidade obrigatória'),
-  estado: z.string().min(2, 'Estado obrigatório').max(2, 'Use a sigla (ex: SP)'),
-  cep: z.string().min(9, 'CEP inválido'),
+  endereco: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().max(2, 'Use a sigla (ex: SP)').optional(),
+  cep: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -113,10 +113,20 @@ export function CompanyFormScreen() {
   const onSubmit = async (data: FormData) => {
     setSaving(true);
     try {
+      const payload = {
+        razaoSocial: data.razaoSocial,
+        nomeFantasia: data.nomeFantasia ?? '',
+        cnpj: data.cnpj,
+        endereco: data.endereco ?? '',
+        cidade: data.cidade ?? '',
+        estado: data.estado ?? '',
+        cep: data.cep ?? '',
+        logoUri,
+      };
       if (isEditing && companyId) {
-        updateCompany(companyId, { ...data, nomeFantasia: data.nomeFantasia ?? '', logoUri });
+        updateCompany(companyId, payload);
       } else {
-        insertCompany({ ...data, nomeFantasia: data.nomeFantasia ?? '', logoUri });
+        insertCompany(payload);
       }
       navigation.goBack();
     } catch (e: any) {
@@ -206,11 +216,10 @@ export function CompanyFormScreen() {
           name="endereco"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="Endereço *"
+              label="Endereço"
               value={value}
               onChangeText={onChange}
               placeholder="Rua, número, complemento"
-              error={errors.endereco?.message}
             />
           )}
         />
@@ -221,11 +230,10 @@ export function CompanyFormScreen() {
             name="cidade"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="Cidade *"
+                label="Cidade"
                 value={value}
                 onChangeText={onChange}
                 placeholder="Cidade"
-                error={errors.cidade?.message}
                 containerStyle={{ flex: 3, marginRight: 12 }}
               />
             )}
@@ -235,7 +243,7 @@ export function CompanyFormScreen() {
             name="estado"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="UF *"
+                label="UF"
                 value={value}
                 onChangeText={(t) => onChange(t.toUpperCase())}
                 placeholder="SP"
@@ -253,13 +261,12 @@ export function CompanyFormScreen() {
           name="cep"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CEP *"
+              label="CEP"
               value={value}
               onChangeText={onChange}
               placeholder="00000-000"
               mask="99999-999"
               keyboardType="numeric"
-              error={errors.cep?.message}
             />
           )}
         />

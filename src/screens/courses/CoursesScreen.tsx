@@ -10,6 +10,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Course, RootStackParamList } from '../../types';
 import { getAllCourses } from '../../database/database';
 import { Colors } from '../../theme/colors';
@@ -19,6 +20,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export function CoursesScreen() {
   const navigation = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const [courses, setCourses] = useState<Course[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -66,7 +68,7 @@ export function CoursesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { paddingTop: insets.top + 16 }]}>
         <View>
           <Text style={styles.headerTitle}>Cursos</Text>
           <Text style={styles.headerSub}>{courses.length} cadastrado{courses.length !== 1 ? 's' : ''}</Text>

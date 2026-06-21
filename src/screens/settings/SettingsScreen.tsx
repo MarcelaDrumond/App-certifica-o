@@ -14,8 +14,10 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { exportAllData, importAllData } from '../../database/database';
 import { Colors } from '../../theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -86,7 +88,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}>
       <View style={styles.headerCard}>
         <Ionicons name="settings-outline" size={28} color={Colors.primary.main} />
         <View style={{ flex: 1 }}>

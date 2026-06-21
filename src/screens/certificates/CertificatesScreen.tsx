@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Certificate, RootStackParamList } from '../../types';
 import { getAllCertificates, deleteCertificate } from '../../database/database';
 import { Colors } from '../../theme/colors';
@@ -40,6 +41,7 @@ function isExpired(dateStr: string): boolean {
 
 export function CertificatesScreen() {
   const navigation = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -125,7 +127,7 @@ export function CertificatesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { paddingTop: insets.top + 16 }]}>
         <View>
           <Text style={styles.headerTitle}>Certificados</Text>
           <Text style={styles.headerSub}>{certificates.length} emitido{certificates.length !== 1 ? 's' : ''}</Text>

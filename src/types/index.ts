@@ -3,10 +3,10 @@ export interface Company {
   razaoSocial: string;
   nomeFantasia?: string;
   cnpj: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
+  endereco?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
   logoUri?: string;
   createdAt: string;
 }
@@ -26,6 +26,7 @@ export interface Technician {
   nomeCompleto: string;
   funcao: string;
   registroDSST: string;
+  fotoUri?: string;
   createdAt: string;
 }
 

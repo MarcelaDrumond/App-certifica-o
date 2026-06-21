@@ -36,6 +36,7 @@ export function initDatabase(): void {
       nomeCompleto TEXT NOT NULL,
       funcao TEXT NOT NULL,
       registroDSST TEXT NOT NULL,
+      fotoUri TEXT,
       createdAt TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -83,6 +84,7 @@ export function initDatabase(): void {
   // Migrations for existing databases
   try { db.execSync(`ALTER TABLE companies ADD COLUMN nomeFantasia TEXT NOT NULL DEFAULT ''`); } catch {}
   try { db.execSync(`ALTER TABLE courses ADD COLUMN codigo TEXT NOT NULL DEFAULT ''`); } catch {}
+  try { db.execSync(`ALTER TABLE technicians ADD COLUMN fotoUri TEXT`); } catch {}
 }
 
 // ─── Companies ──────────────────────────────────────────────────────────────
@@ -167,16 +169,16 @@ export function getTechnicianById(id: number): Technician | null {
 
 export function insertTechnician(data: Omit<Technician, 'id' | 'createdAt'>): number {
   const result = db.runSync(
-    `INSERT INTO technicians (nomeCompleto, funcao, registroDSST) VALUES (?, ?, ?)`,
-    [data.nomeCompleto, data.funcao, data.registroDSST]
+    `INSERT INTO technicians (nomeCompleto, funcao, registroDSST, fotoUri) VALUES (?, ?, ?, ?)`,
+    [data.nomeCompleto, data.funcao, data.registroDSST, data.fotoUri ?? null]
   );
   return result.lastInsertRowId;
 }
 
 export function updateTechnician(id: number, data: Omit<Technician, 'id' | 'createdAt'>): void {
   db.runSync(
-    `UPDATE technicians SET nomeCompleto=?, funcao=?, registroDSST=? WHERE id=?`,
-    [data.nomeCompleto, data.funcao, data.registroDSST, id]
+    `UPDATE technicians SET nomeCompleto=?, funcao=?, registroDSST=?, fotoUri=? WHERE id=?`,
+    [data.nomeCompleto, data.funcao, data.registroDSST, data.fotoUri ?? null, id]
   );
 }
 
@@ -244,11 +246,14 @@ export function deleteCourse(id: number): void {
 export function getAllCertificates(): Certificate[] {
   const certs = db.getAllSync<Certificate>(
     `SELECT ce.*,
-      co.razaoSocial as 'company.razaoSocial', co.cnpj as 'company.cnpj', co.logoUri as 'company.logoUri',
+      co.razaoSocial as 'company.razaoSocial', co.nomeFantasia as 'company.nomeFantasia',
+      co.cnpj as 'company.cnpj', co.logoUri as 'company.logoUri',
       co.endereco as 'company.endereco', co.cidade as 'company.cidade', co.estado as 'company.estado',
       e.nomeCompleto as 'employee.nomeCompleto', e.funcao as 'employee.funcao', e.cpf as 'employee.cpf',
-      t.nomeCompleto as 'technician.nomeCompleto', t.funcao as 'technician.funcao', t.registroDSST as 'technician.registroDSST',
-      cu.nome as 'course.nome', cu.duracaoHoras as 'course.duracaoHoras', cu.validadeAnos as 'course.validadeAnos'
+      t.nomeCompleto as 'technician.nomeCompleto', t.funcao as 'technician.funcao',
+      t.registroDSST as 'technician.registroDSST', t.fotoUri as 'technician.fotoUri',
+      cu.nome as 'course.nome', cu.codigo as 'course.codigo',
+      cu.duracaoHoras as 'course.duracaoHoras', cu.validadeAnos as 'course.validadeAnos'
      FROM certificates ce
      JOIN companies co ON ce.companyId = co.id
      JOIN employees e ON ce.employeeId = e.id
@@ -262,11 +267,14 @@ export function getAllCertificates(): Certificate[] {
 export function getCertificateById(id: number): Certificate | null {
   const cert = db.getFirstSync<any>(
     `SELECT ce.*,
-      co.razaoSocial as 'company.razaoSocial', co.cnpj as 'company.cnpj', co.logoUri as 'company.logoUri',
+      co.razaoSocial as 'company.razaoSocial', co.nomeFantasia as 'company.nomeFantasia',
+      co.cnpj as 'company.cnpj', co.logoUri as 'company.logoUri',
       co.endereco as 'company.endereco', co.cidade as 'company.cidade', co.estado as 'company.estado',
       e.nomeCompleto as 'employee.nomeCompleto', e.funcao as 'employee.funcao', e.cpf as 'employee.cpf',
-      t.nomeCompleto as 'technician.nomeCompleto', t.funcao as 'technician.funcao', t.registroDSST as 'technician.registroDSST',
-      cu.nome as 'course.nome', cu.duracaoHoras as 'course.duracaoHoras', cu.validadeAnos as 'course.validadeAnos'
+      t.nomeCompleto as 'technician.nomeCompleto', t.funcao as 'technician.funcao',
+      t.registroDSST as 'technician.registroDSST', t.fotoUri as 'technician.fotoUri',
+      cu.nome as 'course.nome', cu.codigo as 'course.codigo',
+      cu.duracaoHoras as 'course.duracaoHoras', cu.validadeAnos as 'course.validadeAnos'
      FROM certificates ce
      JOIN companies co ON ce.companyId = co.id
      JOIN employees e ON ce.employeeId = e.id
