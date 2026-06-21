@@ -56,6 +56,7 @@ function generateCertificateHtml(
   const courseName = cert.course?.nome ?? '';
   const duracaoHoras = cert.course?.duracaoHoras ?? 0;
   const localDate = `${cert.localRealizacao}, ${formatDateBR(cert.dataRealizacao)}`;
+  const employeeCPF = cert.employee?.cpf ?? '';
   const techName = cert.technician?.nomeCompleto ?? '';
   const techDSST = cert.technician?.registroDSST ?? '';
   const techFuncao = cert.technician?.funcao ?? '';
@@ -232,7 +233,7 @@ function generateCertificateHtml(
     border-radius: 3px;
     padding: 7px 12px;
     margin: 4px 0;
-    text-align: left;
+    text-align: center;
   }
 
   .course-label { font-size: 7px; color: #9E9E9E; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
@@ -246,7 +247,7 @@ function generateCertificateHtml(
     margin-bottom: 4px;
   }
 
-  .course-meta { display: flex; gap: 18px; }
+  .course-meta { display: flex; gap: 18px; justify-content: center; }
   .meta-col { display: flex; flex-direction: column; gap: 1px; }
   .meta-lbl { font-size: 7px; color: #BDBDBD; text-transform: uppercase; letter-spacing: 0.8px; }
   .meta-val { font-size: 11px; font-weight: 700; color: #212121; }
@@ -257,7 +258,7 @@ function generateCertificateHtml(
     border-radius: 3px;
     padding: 5px 12px;
     margin: 4px 0;
-    text-align: left;
+    text-align: center;
   }
 
   .company-lbl { font-size: 7px; color: #BDBDBD; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 2px; }
@@ -465,7 +466,8 @@ function generateCertificateHtml(
       <div class="sig-block">
         <div class="sig-line">
           <div class="sig-name">${employeeName}</div>
-          <div class="sig-role">Participante</div>
+          <div class="sig-role">${employeeCargo}</div>
+          <div class="sig-dsst">CPF: ${employeeCPF}</div>
         </div>
       </div>
       <div class="sig-block">

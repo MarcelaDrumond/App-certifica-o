@@ -15,7 +15,7 @@ const logoBase64 = `data:image/png;base64,${fs.readFileSync(logoPath).toString('
 // ── Dados de teste ────────────────────────────────────────────────────────────
 const cert = {
   numeroUnico: 'TRS-2025-482391',
-  employee:    { nomeCompleto: 'Maria Fernanda Oliveira Costa', funcao: 'Técnica de Enfermagem do Trabalho' },
+  employee:    { nomeCompleto: 'Maria Fernanda Oliveira Costa', funcao: 'Técnica de Enfermagem do Trabalho', cpf: '123.456.789-00' },
   company:     { razaoSocial: 'Indústrias Metalúrgicas São Paulo S.A.', cnpj: '12.345.678/0001-99', endereco: 'Rua das Indústrias, 450', cidade: 'São Paulo', estado: 'SP', logoUri: null },
   course: {
     nome: 'NR-35 — Trabalho em Altura',
@@ -92,15 +92,15 @@ function buildHtml() {
   .emp-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:#1B5E20;line-height:1.15;margin:3px 0 2px;}
   .emp-role{font-size:9px;color:#9E9E9E;margin-bottom:5px;}
 
-  .course-block{background:#E8F5E9;border-left:3px solid #2E7D32;border-radius:3px;padding:7px 12px;margin:4px 0;text-align:left;}
+  .course-block{background:#E8F5E9;border-left:3px solid #2E7D32;border-radius:3px;padding:7px 12px;margin:4px 0;text-align:center;}
   .course-label{font-size:7px;color:#9E9E9E;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;}
   .course-name{font-family:'Playfair Display',Georgia,serif;font-size:13px;font-weight:700;color:#1B5E20;line-height:1.2;margin-bottom:4px;}
-  .course-meta{display:flex;gap:18px;}
+  .course-meta{display:flex;gap:18px;justify-content:center;}
   .meta-col{display:flex;flex-direction:column;gap:1px;}
   .meta-lbl{font-size:7px;color:#BDBDBD;text-transform:uppercase;letter-spacing:.8px;}
   .meta-val{font-size:11px;font-weight:700;color:#212121;}
 
-  .company-block{background:#FAFAFA;border:1px solid #EEEEEE;border-radius:3px;padding:5px 12px;margin:4px 0;text-align:left;}
+  .company-block{background:#FAFAFA;border:1px solid #EEEEEE;border-radius:3px;padding:5px 12px;margin:4px 0;text-align:center;}
   .company-lbl{font-size:7px;color:#BDBDBD;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;}
   .company-name-val{font-size:11px;font-weight:700;color:#212121;line-height:1.3;}
   .company-detail{font-size:8.5px;color:#9E9E9E;margin-top:1px;}
@@ -184,7 +184,8 @@ function buildHtml() {
       <div class="sig-block">
         <div class="sig-line">
           <div class="sig-name">${cert.employee.nomeCompleto}</div>
-          <div class="sig-role">Participante</div>
+          <div class="sig-role">${cert.employee.funcao}</div>
+          <div class="sig-dsst">CPF: ${cert.employee.cpf}</div>
         </div>
       </div>
       <div class="sig-block">

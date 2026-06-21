@@ -186,7 +186,8 @@ export function CertificatePreviewScreen() {
           <View style={styles.sigBlock}>
             <View style={styles.sigLine} />
             <Text style={styles.sigName}>{certificate.employee?.nomeCompleto}</Text>
-            <Text style={styles.sigRole}>Participante</Text>
+            <Text style={styles.sigRole}>{certificate.employee?.funcao}</Text>
+            <Text style={styles.sigDSST}>CPF: {certificate.employee?.cpf}</Text>
           </View>
           <View style={styles.sigBlock}>
             <View style={styles.sigLine} />
@@ -326,10 +327,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.pale,
     borderLeftWidth: 4, borderLeftColor: Colors.primary.main,
     marginHorizontal: 16, borderRadius: 6, padding: 14, marginBottom: 12,
+    alignItems: 'center',
   },
-  courseLabel: { fontSize: 11, color: Colors.gray[500], textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  courseName: { fontSize: 17, fontWeight: '800', color: Colors.primary.dark, marginBottom: 8, lineHeight: 22 },
-  courseMeta: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  courseLabel: { fontSize: 11, color: Colors.gray[500], textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, textAlign: 'center' },
+  courseName: { fontSize: 17, fontWeight: '800', color: Colors.primary.dark, marginBottom: 8, lineHeight: 22, textAlign: 'center' },
+  courseMeta: { flexDirection: 'row', gap: 10, flexWrap: 'wrap', justifyContent: 'center' },
   metaBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: Colors.white, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4,
@@ -351,10 +353,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 8,
     borderLeftWidth: 3, borderLeftColor: Colors.amber.main,
     backgroundColor: Colors.gray[50], borderRadius: 4,
+    alignItems: 'center',
   },
-  companyBlockLabel: { fontSize: 10, color: Colors.gray[500], textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  companyBlockName: { fontSize: 13, fontWeight: '700', color: Colors.primary.dark, marginBottom: 2 },
-  companyBlockDetail: { fontSize: 11, color: Colors.gray[600] },
+  companyBlockLabel: { fontSize: 10, color: Colors.gray[500], textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2, textAlign: 'center' },
+  companyBlockName: { fontSize: 13, fontWeight: '700', color: Colors.primary.dark, marginBottom: 2, textAlign: 'center' },
+  companyBlockDetail: { fontSize: 11, color: Colors.gray[600], textAlign: 'center' },
 
   sealRow: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
