@@ -130,12 +130,21 @@ export function CertificatesScreen() {
           <Text style={styles.headerTitle}>Certificados</Text>
           <Text style={styles.headerSub}>{certificates.length} emitido{certificates.length !== 1 ? 's' : ''}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate('CertificateIssue')}
-        >
-          <Ionicons name="add" size={22} color={Colors.white} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.batchButton}
+            onPress={() => navigation.navigate('BatchCertificateIssue')}
+          >
+            <Ionicons name="people-outline" size={16} color={Colors.primary.main} />
+            <Text style={styles.batchButtonText}>Turma</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => navigation.navigate('CertificateIssue')}
+          >
+            <Ionicons name="add" size={22} color={Colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -175,6 +184,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 22, fontWeight: '700', color: Colors.gray[900] },
   headerSub: { fontSize: 13, color: Colors.gray[500], marginTop: 2 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  batchButton: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderWidth: 1.5, borderColor: Colors.primary.main,
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7,
+    backgroundColor: Colors.primary.pale,
+  },
+  batchButtonText: { fontSize: 13, fontWeight: '700', color: Colors.primary.main },
   addButton: {
     width: 42, height: 42, borderRadius: 21,
     backgroundColor: Colors.amber.main, alignItems: 'center', justifyContent: 'center',

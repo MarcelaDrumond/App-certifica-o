@@ -73,6 +73,7 @@ export type RootStackParamList = {
   TechnicianForm: { technicianId?: number };
   TechnicianDetail: { technicianId: number };
   CertificateIssue: undefined;
+  BatchCertificateIssue: undefined;
   CertificatePreview: { certificateId: number };
   CertificateDetail: { certificateId: number };
 };

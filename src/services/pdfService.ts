@@ -45,57 +45,9 @@ function formatDateBR(dateStr: string): string {
   }
 }
 
-function generateCertificateHtml(
-  cert: Certificate,
-  trasemeLogoBase64: string,
-  companyLogoBase64?: string
-): string {
-  const topicos = cert.course?.topicos ?? [];
-  const employeeName = cert.employee?.nomeCompleto ?? '';
-  const employeeCargo = cert.employee?.funcao ?? '';
-  const courseName = cert.course?.nome ?? '';
-  const duracaoHoras = cert.course?.duracaoHoras ?? 0;
-  const localDate = `${cert.localRealizacao}, ${formatDateBR(cert.dataRealizacao)}`;
-  const employeeCPF = cert.employee?.cpf ?? '';
-  const techName = cert.technician?.nomeCompleto ?? '';
-  const techDSST = cert.technician?.registroDSST ?? '';
-  const techFuncao = cert.technician?.funcao ?? '';
-  const companyName = cert.company?.razaoSocial ?? '';
-  const companyCNPJ = cert.company?.cnpj ?? '';
-  const companyEndereco = cert.company?.endereco ?? '';
-  const companyCidade = cert.company?.cidade ?? '';
-  const companyEstado = cert.company?.estado ?? '';
-  const certNumber = cert.numeroUnico;
+// ── Shared CSS for all certificate pages ─────────────────────────────────────
 
-  const addressLine = [
-    companyEndereco,
-    [companyCidade, companyEstado].filter(Boolean).join('/'),
-  ].filter(Boolean).join(' — ');
-
-  const trasemeLogoHtml = trasemeLogoBase64
-    ? `<img src="${trasemeLogoBase64}" style="height:44px;width:auto;object-fit:contain;display:block;" alt="Traseme" />`
-    : `<div style="height:44px;width:110px;background:#1B5E20;border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:900;letter-spacing:1px;">TRASEME</div>`;
-
-  const companyLogoHtml = companyLogoBase64
-    ? `<img src="${companyLogoBase64}" style="height:40px;width:auto;max-width:110px;object-fit:contain;display:block;" alt="${companyName}" />`
-    : `<div style="height:40px;width:40px;background:#E8F5E9;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:18px;font-weight:800;">${companyName.charAt(0)}</div>`;
-
-  const topicosHtml = topicos
-    .map(
-      (t, i) =>
-        `<tr style="background:${i % 2 === 0 ? '#FAFAFA' : '#FFFFFF'};">
-          <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#1B5E20;font-weight:700;font-size:10px;width:36px;white-space:nowrap;">${t.ordem}.</td>
-          <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#424242;font-size:10px;line-height:1.4;">${t.topico}</td>
-        </tr>`
-    )
-    .join('');
-
-  return `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
-<style>
+const CERT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -106,12 +58,15 @@ function generateCertificateHtml(
     color: #212121;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .cert-page {
     width: 210mm;
     height: 297mm;
     overflow: hidden;
+    position: relative;
   }
 
-  /* ── METADE (frente / verso) ── */
   .half {
     width: 210mm;
     height: 148mm;
@@ -150,14 +105,12 @@ function generateCertificateHtml(
     flex-direction: column;
   }
 
-  /* ── LINHA DE DOBRA ── */
   .fold-line {
     width: 210mm;
     height: 1mm;
     border-top: 1px dashed #BDBDBD;
   }
 
-  /* ── CABEÇALHO ── */
   .header {
     display: flex;
     align-items: center;
@@ -167,7 +120,6 @@ function generateCertificateHtml(
     margin-bottom: 7px;
   }
 
-  /* ── FRENTE: CERTIFICADO ── */
   .cert-title {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 30px;
@@ -347,7 +299,6 @@ function generateCertificateHtml(
 
   .footer-auth { font-size: 7px; color: #BDBDBD; text-transform: uppercase; letter-spacing: 0.8px; }
 
-  /* ── VERSO: CONTEÚDO PROGRAMÁTICO ── */
   .p2-heading { flex: 1; padding-left: 12px; }
 
   .p2-title {
@@ -403,11 +354,57 @@ function generateCertificateHtml(
 
   .validity-lbl { font-size: 7px; color: #9E9E9E; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1px; }
   .validity-date { font-size: 11px; font-weight: 800; color: #C9A227; }
-</style>
-</head>
-<body>
+`;
 
-<!-- ════════════════════ FRENTE: CERTIFICADO ════════════════════ -->
+// ── Builds the body content (two halves) for one certificate ─────────────────
+
+function buildCertPageHtml(
+  cert: Certificate,
+  trasemeLogoBase64: string,
+  companyLogoBase64?: string
+): string {
+  const topicos = cert.course?.topicos ?? [];
+  const employeeName = cert.employee?.nomeCompleto ?? '';
+  const employeeCargo = cert.employee?.funcao ?? '';
+  const employeeCPF = cert.employee?.cpf ?? '';
+  const courseName = cert.course?.nome ?? '';
+  const duracaoHoras = cert.course?.duracaoHoras ?? 0;
+  const localDate = `${cert.localRealizacao}, ${formatDateBR(cert.dataRealizacao)}`;
+  const techName = cert.technician?.nomeCompleto ?? '';
+  const techDSST = cert.technician?.registroDSST ?? '';
+  const techFuncao = cert.technician?.funcao ?? '';
+  const companyName = cert.company?.razaoSocial ?? '';
+  const companyCNPJ = cert.company?.cnpj ?? '';
+  const companyEndereco = cert.company?.endereco ?? '';
+  const companyCidade = cert.company?.cidade ?? '';
+  const companyEstado = cert.company?.estado ?? '';
+  const certNumber = cert.numeroUnico;
+
+  const addressLine = [
+    companyEndereco,
+    [companyCidade, companyEstado].filter(Boolean).join('/'),
+  ].filter(Boolean).join(' — ');
+
+  const trasemeLogoHtml = trasemeLogoBase64
+    ? `<img src="${trasemeLogoBase64}" style="height:44px;width:auto;object-fit:contain;display:block;" alt="Traseme" />`
+    : `<div style="height:44px;width:110px;background:#1B5E20;border-radius:4px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:900;letter-spacing:1px;">TRASEME</div>`;
+
+  const companyLogoHtml = companyLogoBase64
+    ? `<img src="${companyLogoBase64}" style="height:40px;width:auto;max-width:110px;object-fit:contain;display:block;" alt="${companyName}" />`
+    : `<div style="height:40px;width:40px;background:#E8F5E9;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1B5E20;font-size:18px;font-weight:800;">${companyName.charAt(0)}</div>`;
+
+  const topicosHtml = topicos
+    .map(
+      (t, i) =>
+        `<tr style="background:${i % 2 === 0 ? '#FAFAFA' : '#FFFFFF'};">
+          <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#1B5E20;font-weight:700;font-size:10px;width:36px;white-space:nowrap;">${t.ordem}.</td>
+          <td style="padding:5px 10px;border-bottom:1px solid #E0E0E0;color:#424242;font-size:10px;line-height:1.4;">${t.topico}</td>
+        </tr>`
+    )
+    .join('');
+
+  return `
+<!-- ════════════════════ FRENTE ════════════════════ -->
 <div class="half">
   <div class="outer-border"></div>
   <div class="inner-border"></div>
@@ -415,7 +412,6 @@ function generateCertificateHtml(
   <div class="corner bl"></div><div class="corner br"></div>
 
   <div class="half-inner">
-
     <div class="header">
       ${trasemeLogoHtml}
       ${companyLogoHtml}
@@ -490,14 +486,13 @@ function generateCertificateHtml(
       </div>
       ${trasemeLogoBase64 ? `<img src="${trasemeLogoBase64}" style="height:28px;width:auto;opacity:0.3;" alt="" />` : ''}
     </div>
-
   </div>
 </div>
 
-<!-- ════════════════════ LINHA DE DOBRA ════════════════════ -->
+<!-- ════════════════════ DOBRA ════════════════════ -->
 <div class="fold-line"></div>
 
-<!-- ════════════════════ VERSO: CONTEÚDO PROGRAMÁTICO ════════════════════ -->
+<!-- ════════════════════ VERSO ════════════════════ -->
 <div class="half">
   <div class="outer-border"></div>
   <div class="inner-border"></div>
@@ -505,7 +500,6 @@ function generateCertificateHtml(
   <div class="corner bl"></div><div class="corner br"></div>
 
   <div class="half-inner">
-
     <div class="header">
       ${trasemeLogoHtml}
       <div class="p2-heading">
@@ -536,14 +530,55 @@ function generateCertificateHtml(
         <div class="validity-date">${formatDateBR(cert.dataValidade)}</div>
       </div>
     </div>
-
   </div>
-</div>
-
-</body>
-</html>
-`;
+</div>`;
 }
+
+// ── Full HTML wrappers ────────────────────────────────────────────────────────
+
+function wrapHtml(bodyContent: string): string {
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<style>
+@page { size: A4 portrait; margin: 0; }
+${CERT_CSS}
+</style>
+</head>
+<body>
+${bodyContent}
+</body>
+</html>`;
+}
+
+function generateCertificateHtml(
+  cert: Certificate,
+  trasemeLogoBase64: string,
+  companyLogoBase64?: string
+): string {
+  return wrapHtml(
+    `<div class="cert-page">${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64)}</div>`
+  );
+}
+
+function generateBatchCertificateHtml(
+  certs: Certificate[],
+  trasemeLogoBase64: string,
+  companyLogoBase64?: string
+): string {
+  const pages = certs
+    .map((cert, i) => {
+      const isLast = i === certs.length - 1;
+      return `<div class="cert-page" style="${isLast ? '' : 'page-break-after:always;'}">
+  ${buildCertPageHtml(cert, trasemeLogoBase64, companyLogoBase64)}
+</div>`;
+    })
+    .join('\n');
+  return wrapHtml(pages);
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 export async function generateAndSharePdf(cert: Certificate): Promise<string> {
   const [trasemeLogo, companyLogo] = await Promise.all([
@@ -552,7 +587,6 @@ export async function generateAndSharePdf(cert: Certificate): Promise<string> {
   ]);
 
   const html = generateCertificateHtml(cert, trasemeLogo, companyLogo || undefined);
-
   const { uri } = await Print.printToFileAsync({ html, base64: false });
 
   const fileName = `Certificado_${cert.numeroUnico.replace(/\//g, '-')}.pdf`;
@@ -569,6 +603,33 @@ export async function generateAndSharePdf(cert: Certificate): Promise<string> {
   }
 
   return destUri;
+}
+
+export async function generateBatchAndSharePdf(certs: Certificate[]): Promise<void> {
+  if (certs.length === 0) return;
+
+  const companyLogoUri = certs[0]?.company?.logoUri ?? '';
+  const [trasemeLogo, companyLogo] = await Promise.all([
+    getLogoBase64(),
+    companyLogoUri ? getCompanyLogoBase64(companyLogoUri) : Promise.resolve(''),
+  ]);
+
+  const html = generateBatchCertificateHtml(certs, trasemeLogo, companyLogo || undefined);
+  const { uri } = await Print.printToFileAsync({ html, base64: false });
+
+  const timestamp = format(new Date(), 'yyyyMMdd-HHmm');
+  const fileName = `Turma_${timestamp}_${certs.length}certificados.pdf`;
+  const destUri = FileSystem.documentDirectory + fileName;
+  await FileSystem.copyAsync({ from: uri, to: destUri });
+
+  const canShare = await Sharing.isAvailableAsync();
+  if (canShare) {
+    await Sharing.shareAsync(destUri, {
+      mimeType: 'application/pdf',
+      dialogTitle: `Compartilhar ${certs.length} Certificados`,
+      UTI: 'com.adobe.pdf',
+    });
+  }
 }
 
 export async function printCertificate(cert: Certificate): Promise<void> {

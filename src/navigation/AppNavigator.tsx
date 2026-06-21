@@ -19,6 +19,7 @@ import { TechniciansScreen } from '../screens/technicians/TechniciansScreen';
 import { TechnicianFormScreen } from '../screens/technicians/TechnicianFormScreen';
 import { CertificatesScreen } from '../screens/certificates/CertificatesScreen';
 import { CertificateIssueScreen } from '../screens/certificates/CertificateIssueScreen';
+import { BatchCertificateIssueScreen } from '../screens/certificates/BatchCertificateIssueScreen';
 import { CertificatePreviewScreen } from '../screens/certificates/CertificatePreviewScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
@@ -165,6 +166,11 @@ export function AppNavigator() {
           name="CertificateIssue"
           component={CertificateIssueScreen}
           options={{ title: 'Emitir Certificado' }}
+        />
+        <Stack.Screen
+          name="BatchCertificateIssue"
+          component={BatchCertificateIssueScreen}
+          options={{ title: 'Emissão em Lote — Turma' }}
         />
         <Stack.Screen
           name="CertificatePreview"
