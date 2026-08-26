@@ -20,14 +20,17 @@ npx expo start
 #    ou pressionar 'a' para Android / 'i' para iOS
 ```
 
-## Assets necessários
+## Assets pendentes
 
-Adicione em `assets/`:
+⚠️ Os arquivos em `assets/` existem mas são todos a mesma imagem placeholder (943×265px)
+— nenhum está no tamanho certo ainda. Antes de publicar o app, substitua por:
 - `traseme-logo.png` — Logo da Traseme (PNG transparente, mín. 512x512)
 - `icon.png` — Ícone do app (1024x1024 PNG)
 - `splash.png` — Splash screen (1284x2778 PNG)
 - `adaptive-icon.png` — Ícone Android adaptativo (1024x1024 PNG)
 - `favicon.png` — Favicon web (64x64 PNG)
+
+Ver `assets/README.md` para detalhes.
 
 ## Build para produção
 
